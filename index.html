@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Core Interface</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 1000px;
+        }
+
+        .scene {
+            width: 400px;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-20px) rotateY(10deg); }
+        }
+
+        .core-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-style: preserve-3d;
+            width: 200px;
+            height: 200px;
+            margin-left: -100px;
+            margin-top: -100px;
+        }
+
+        .ring {
+            position: absolute;
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 50%;
+            transform-style: preserve-3d;
+        }
+
+        .eye-socket {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border: 4px solid #00f2ff;
+            border-radius: 50%;
+            top: 40px;
+            left: 40px;
+            box-shadow: 0 0 20px #00f2ff, inset 0 0 20px #00f2ff;
+            background: radial-gradient(circle, rgba(0,242,255,0.2) 0%, transparent 70%);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .pupil {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            top: 40px;
+            left: 40px;
+            box-shadow: 0 0 30px #fff, 0 0 60px #00f2ff;
+        }
+
+        .data-stream {
+            position: absolute;
+            width: 2px;
+            height: 60px;
+            background: linear-gradient(to bottom, transparent, #00f2ff, transparent);
+            opacity: 0.6;
+        }
+
+        .orbit {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(0, 242, 255, 0.1);
+            border-radius: 50%;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotateX(60deg) rotateZ(0deg); }
+            to { transform: rotateX(60deg) rotateZ(360deg); }
+        }
+
+        .hologram-plate {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            top: -50px;
+            left: -50px;
+            transform: rotateX(80deg);
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 242, 255, 0.05) 3px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scene">
+        <div class="hologram-plate"></div>
+        <div class="core-container" id="core">
+            <div class="eye-socket">
+                <div class="pupil" id="pupil"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const core = document.getElementById('core');
+        const pupil = document.getElementById('pupil');
+        const scene = document.querySelector('.scene');
+
+        for (let i = 0; i < 8; i++) {
+            const ring = document.createElement('div');
+            ring.className = 'ring';
+            ring.style.width = `${200 + i * 30}px`;
+            ring.style.height = `${200 + i * 30}px`;
+            ring.style.top = `${-i * 15}px`;
+            ring.style.left = `${-i * 15}px`;
+            ring.style.transform = `rotateX(${i * 20}deg) rotateY(${i * 10}deg)`;
+            ring.style.animation = `rotate ${10 + i}s linear infinite`;
+            core.appendChild(ring);
+        }
+
+        for (let i = 0; i < 20; i++) {
+            const stream = document.createElement('div');
+            stream.className = 'data-stream';
+            stream.style.left = Math.random() * 400 + 'px';
+            stream.style.top = Math.random() * 400 + 'px';
+            stream.style.animation = `float ${2 + Math.random() * 4}s linear infinite`;
+            scene.appendChild(stream);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 25;
+            const y = (window.innerHeight / 2 - e.pageY) / 25;
+            
+            core.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+            
+            const px = (e.pageX - window.innerWidth / 2) / 40;
+            const py = (e.pageY - window.innerHeight / 2) / 40;
+            pupil.style.transform = `translate(${px}px, ${py}px)`;
+        });
+
+        setInterval(() => {
+            pupil.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
+            setTimeout(() => {
+                pupil.style.filter = `hue-rotate(0deg)`;
+            }, 100);
+        }, 4000);
+    </script>
+</body>
+</html>
