@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JARVIS Core Matrix</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            perspective: 1200px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Sci-Fi Scanline overlay */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(0, 242, 255, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 242, 255, 0.04));
+            z-index: 20;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        .scene {
+            width: 80vw;
+            height: 80vw;
+            max-width: 400px;
+            max-height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-12px) rotateY(4deg); }
+        }
+
+        .core-container {
+            position: absolute;
+            transform-style: preserve-3d;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease-out;
+        }
+
+        .ring {
+            position: absolute;
+            border: 1.5px solid rgba(0, 217, 255, 0.25);
+            border-radius: 50%;
+            transform-style: preserve-3d;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .eye-socket {
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            border: 3px solid #00f2ff;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #00f2ff, inset 0 0 15px #00f2ff;
+            background: radial-gradient(circle, rgba(0,242,255,0.15) 0%, transparent 75%);
+            animation: pulse 2.5s ease-in-out infinite;
+            z-index: 10;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+
+        .pupil {
+            position: absolute;
+            width: 35%;
+            height: 35%;
+            background: #fff;
+            border-radius: 50%;
+            top: 32.5%;
+            left: 32.5%;
+            box-shadow: 0 0 25px #fff, 0 0 45px #00f2ff;
+            transition: all 0.2s ease;
+        }
+
+        .hologram-plate {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            border: 1px solid rgba(0, 242, 255, 0.08);
+            transform: rotateX(85deg) translateZ(-60px);
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 242, 255, 0.02) 4px);
+        }
+
+        /* --- HIGH-INTENSITY INTERACTION GLOW STATES --- */
+
+        /* 1. Kinetic Hover Interaction (Awareness Glow) */
+        .scene:hover .eye-socket {
+            box-shadow: 0 0 35px #00f2ff, 0 0 15px #00f2ff, inset 0 0 20px #00f2ff;
+            border-color: #fff;
+        }
+        
+        /* 2. Listening State (Hyper Cyan Energy Pulsing) */
+        .listening .ring {
+            border-color: rgba(0, 242, 255, 0.7);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+        }
+        .listening .eye-socket {
+            border-color: #fff;
+            animation: hyperPulse 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes hyperPulse {
+            0% { 
+                transform: scale(1); 
+                box-shadow: 0 0 30px #00f2ff, 0 0 50px rgba(0, 242, 255, 0.6), inset 0 0 15px #fff;
+                filter: brightness(1);
+            }
+            100% { 
+                transform: scale(1.15); 
+                box-shadow: 0 0 50px #00f2ff, 0 0 80px #00f2ff, inset 0 0 25px #fff;
+                filter: brightness(1.3);
+            }
+        }
+
+        /* 3. Speaking State (Fiery Solar Flare Energy Pulsing) */
+        .speaking .ring {
+            border-color: rgba(255, 115, 0, 0.5);
+            box-shadow: 0 0 20px rgba(255, 81, 0, 0.3);
+        }
+        .speaking .eye-socket {
+            border-color: #ff7300;
+            background: radial-gradient(circle, rgba(255,81,0,0.3) 0%, transparent 75%);
+            animation: vocalFlare 0.4s ease-in-out infinite alternate;
+        }
+        .speaking .pupil {
+            box-shadow: 0 0 30px #fff, 0 0 60px #ff3c00;
+        }
+
+        @keyframes vocalFlare {
+            0% { 
+                transform: scale(1.05); 
+                box-shadow: 0 0 40px #ff5100, 0 0 60px rgba(255, 81, 0, 0.5), inset 0 0 15px #ffb700;
+                filter: brightness(1.1);
+            }
+            100% { 
+                transform: scale(1.22); 
+                box-shadow: 0 0 65px #ff5100, 0 0 110px #ff1e00, inset 0 0 30px #ffb700;
+                filter: brightness(1.5);
+            }
+        }
+
+        /* --- TERMINAL READOUT TELEMETRY --- */
+        .terminal-panel {
+            position: absolute;
+            bottom: 30px;
+            width: 85vw;
+            max-width: 600px;
+            height: 90px;
+            background: rgba(0, 5, 10, 0.75);
+            border: 1px solid rgba(0, 242, 255, 0.15);
+            border-radius: 4px;
+            padding: 12px;
+            box-sizing: border-box;
+            z-index: 30;
+            backdrop-filter: blur(8px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            pointer-events: none;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .listening + .terminal-panel {
+            border-color: rgba(0, 242, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+        }
+
+        .speaking + .terminal-panel {
+            border-color: rgba(255, 81, 0, 0.4);
+            box-shadow: 0 0 15px rgba(255, 81, 0, 0.1);
+        }
+
+        .log-line {
+            margin: 2px 0;
+            font-size: 11px;
+            color: rgba(0, 242, 255, 0.45);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .log-line.active-input {
+            color: #fff;
+            text-shadow: 0 0 8px rgba(0, 242, 255, 0.8);
+        }
+
+        .log-line.jarvis-response {
+            color: #ff9900;
+            text-shadow: 0 0 8px rgba(255, 102, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scene" id="trigger-zone" title="Initialize Vocal Synthesis Matrix">
+        <div class="hologram-plate"></div>
+        <div class="core-container" id="core">
+            <div class="eye-socket">
+                <div class="pupil" id="pupil"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="terminal-panel">
+        <p class="log-line" id="log-2">SYS // CORE STATUS: ONLINE</p>
+        <p class="log-line" id="log-1">SYS // COGNITIVE INTEGRATION READY</p>
+        <p class="log-line active-input" id="log-0">>>> TAP INTEL CORE EYE MODULE TO WAKE JARVIS</p>
+    </div>
+
+    <script>
+        const core = document.getElementById('core');
+        const pupil = document.getElementById('pupil');
+        const scene = document.querySelector('.scene');
+        const triggerZone = document.getElementById('trigger-zone');
+
+        // Dynamically Staggered 3D Ring Generators
+        const ringCount = window.innerWidth < 600 ? 5 : 8;
+        for (let i = 0; i < ringCount; i++) {
+            const ring = document.createElement('div');
+            ring.className = 'ring';
+            const size = 150 + i * (window.innerWidth < 600 ? 25 : 35);
+            ring.style.width = `${size}px`;
+            ring.style.height = `${size}px`;
+            ring.style.transform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
+            ring.style.animation = `rotate ${12 + i}s linear infinite`;
+            core.appendChild(ring);
+        }
+
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes rotate { from { transform: rotateX(70deg) rotateZ(0deg); } to { transform: rotateX(70deg) rotateZ(360deg); } }`;
+        document.head.appendChild(style);
+
+        // Kinetic Tracking Mouse Vector Formula
+        const moveEvent = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const x = (window.innerWidth / 2 - clientX) / 20;
+            const y = (window.innerHeight / 2 - clientY) / 20;
+            
+            core.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+            
+            const px = (clientX - window.innerWidth / 2) / 30;
+            const py = (clientY - window.innerHeight / 2) / 30;
+            pupil.style.transform = `translate(${px}px, ${py}px)`;
+        };
+
+        document.addEventListener('mousemove', moveEvent);
+        document.addEventListener('touchmove', moveEvent);
+
+        // Core Chromatic Shift Stabilizer Loop
+        setInterval(() => {
+            pupil.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
+            setTimeout(() => pupil.style.filter = 'none', 150);
+        }, 5000);
+
+        // --- VOCAL INTELLIGENCE PROCESSING PIPELINE ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const log0 = document.getElementById('log-0');
+        const log1 = document.getElementById('log-1');
+        const log2 = document.getElementById('log-2');
+        
+        let jarvisIsSpeaking = false;
+
+        function pushLog(text, className = '') {
+            log2.innerText = log1.innerText;
+            log2.className = log1.className;
+            log1.innerText = log0.innerText;
+            log1.className = log0.className;
+            log0.innerText = text;
+            log0.className = `log-line ${className}`;
+        }
+
+        if (!SpeechRecognition) {
+            pushLog("SYS // PERMISSION CONTEXT CONFIG ERROR: SPEECH INTERFACE ENGINE ABSENT.", "jarvis-response");
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                scene.classList.remove('speaking');
+                scene.classList.add('listening');
+                pushLog("SYS // MIC ACTIVE // POWER SUPPLY LOCKED // LISTENING...", "active-input");
+            };
+
+            recognition.onerror = (e) => {
+                pushLog(`SYS // STREAM INTERRUPT: ${e.error.toUpperCase()}`);
+            };
+
+            recognition.onend = () => {
+                if (!jarvisIsSpeaking) {
+                    recognition.start(); // Auto-loop keeping microphone persistent
+                } else {
+                    scene.classList.remove('listening');
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const current = event.resultIndex;
+                const transcript = event.results[current][0].transcript.trim().toLowerCase();
+                pushLog(`USER // "${transcript}"`, "active-input");
+                executeAICommand(transcript, recognition);
+            };
+
+            triggerZone.addEventListener('click', () => {
+                if (!scene.classList.contains('listening') && !jarvisIsSpeaking) {
+                    recognition.start();
+                }
+            });
+        }
+
+        function executeAICommand(cmd, recognitionInstance) {
+            recognitionInstance.stop(); // Temporarily prevent mic echo overlap loops
+            
+            let reply = `Telemetry indexed for "${cmd}". Structural analysis engines online.`;
+            
+            if (cmd.includes('hello') || cmd.includes('jarvis') || cmd.includes('wake up')) {
+                reply = "At your service, sir. All core processors running at maximum efficiency.";
+            } else if (cmd.includes('status') || cmd.includes('diagnostic')) {
+                reply = "Systems optimal. Main core temperature steady. Structural arrays reporting nominal bounds.";
+            } else if (cmd.includes('clear')) {
+                reply = "Purging interface log cache files.";
+                setTimeout(() => { log0.innerText = ">>> ARCS TERMINAL ACTIVE"; log1.innerText = ""; log2.innerText = ""; }, 1000);
+            }
+
+            speak(reply, recognitionInstance);
+        }
+
+        function speak(text, recognitionInstance) {
+            jarvisIsSpeaking = true;
+            scene.classList.remove('listening');
+            scene.classList.add('speaking');
+            pushLog(`JARVIS // "${text}"`, "jarvis-response");
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.pitch = 0.90; 
+            utterance.rate = 1.03;  
+
+            utterance.onend = () => {
+                jarvisIsSpeaking = false;
+                scene.classList.remove('speaking');
+                recognitionInstance.start(); // Instant handoff back to audio monitoring loop
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>
