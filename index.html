@@ -349,11 +349,9 @@
             
             if (cmd.includes('hello') || cmd.includes('jarvis') || cmd.includes('wake up')) {
                 reply = "At your service, sir. All core processors running at maximum efficiency.";
-             } 
-            if (cmd.includes('good morning') || cmd.includes('good afternoon') || cmd.includes('good day')) {
+             } else if (cmd.includes('good morning') || cmd.includes('good afternoon') || cmd.includes('good day')) {
                 reply = "I am good , and you sir. All core processors running at maximum efficiency.";
-            } 
-            if (cmd.includes('hey good morning') || cmd.includes('hey good afternoon') || cmd.includes('hey good day')) {
+            }  else if (cmd.includes('hey good morning') || cmd.includes('hey good afternoon') || cmd.includes('hey good day')) {
                 reply = "hello sir, what is the task for today.";
             } else if (cmd.includes('status') || cmd.includes('diagnostic')) {
                 reply = "Systems optimal. Main core temperature steady. Structural arrays reporting nominal bounds.";
