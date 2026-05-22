@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "JARVIS UI Core Extension",
+  "version": "1.1.0",
+  "description": "System-wide 3D interactive holographic voice-activated platform.",
+  "permissions": [
+    "sidePanel",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "action": {
+    "default_title": "Initialize JARVIS Matrix"
+  }
+}
