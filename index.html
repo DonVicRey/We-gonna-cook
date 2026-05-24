@@ -100,6 +100,9 @@
     </style>
 </head>
 <body>
+    <div class="controls">
+    <button id="speakBtn" onclick="speak('System fully operational. Vocal synchronization algorithms online. Ready for execution.')">Initialize Speech</button>
+    </div>
 
     <div class="scene">
         <div class="hologram-plate"></div>
@@ -111,6 +114,35 @@
     </div>
 
     <script>
+
+        function speak(text) {
+    if (synth.speaking) {
+        synth.cancel();
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (femaleVoice) {
+        utterance.voice = femaleVoice;
+    }
+    
+    utterance.pitch = 1.2; 
+    utterance.rate = 0.95;  
+
+    utterance.onstart = () => {
+        isSpeaking = true;
+    };
+
+    utterance.onend = () => {
+        isSpeaking = false;
+    };
+
+    utterance.onerror = () => {
+        isSpeaking = false;
+    };
+
+    synth.speak(utterance);
+        }
+        
         const core = document.getElementById('core');
         const pupil = document.getElementById('pupil');
         const scene = document.querySelector('.scene');
@@ -149,10 +181,71 @@
         document.addEventListener('mousemove', moveEvent);
         document.addEventListener('touchmove', moveEvent);
 
-        setInterval(() => {
-            pupil.style.filter = `underline hue-rotate(${Math.random() * 360}deg)`;
-            setTimeout(() => pupil.style.filter = 'none', 150);
-        }, 5000);
+        let isSpeaking = false;
+let speechWaveform = 0; 
+let speechPitchModifier = 1;
+let animationFrameId;
+
+const synth = window.speechSynthesis;
+let femaleVoice = null;
+
+function loadVoices() {
+    const voices = synth.getVoices();
+    femaleVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('female') || 
+        voice.name.toLowerCase().includes('zira') || 
+        voice.name.toLowerCase().includes('samantha') ||
+        voice.name.toLowerCase().includes('google uk english female')
+    );
+    if (!femaleVoice && voices.length > 0) {
+        femaleVoice = voices[0]; 
+    }
+}
+
+loadVoices();
+if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+        function updateVisuals() {
+            animationFrameId = requestAnimationFrame(updateVisuals);
+
+            if (isSpeaking) {
+                speechWaveform = Math.sin(Date.now() * 0.015) * 0.4 + 0.6;
+                speechWaveform += (Math.random() - 0.5) * 0.3; 
+                speechPitchModifier = 1 + (Math.sin(Date.now() * 0.03) * 0.2);
+            } else {
+                speechWaveform = speechWaveform * 0.8; 
+                if (speechWaveform < 0.01) speechWaveform = 0;
+                speechPitchModifier = 1;
+            }
+
+            ringsArray.forEach((ringObj, index) => {
+                const currentWave = speechWaveform * (1 + index * 0.15);
+                const currentPitch = speechPitchModifier;
+                
+                const scale = 1 + (currentWave * 0.12);
+                
+                const waveA = 50 + (Math.sin((Date.now() * 0.01) + index) * (currentWave * 25) * currentPitch);
+                const waveB = 50 + (Math.cos((Date.now() * 0.01) + index) * (currentWave * 25) * currentPitch);
+                const waveC = 50 + (Math.sin((Date.now() * 0.015) - index) * (currentWave * 20));
+                const waveD = 50 + (Math.cos((Date.now() * 0.005) + index) * (currentWave * 20));
+
+                ringObj.element.style.transform = `${ringObj.baseTransform} scale(${scale})`;
+                ringObj.element.style.borderRadius = `${waveA}% ${waveB}% ${waveC}% ${waveD}%`;
+                
+                if (isSpeaking) {
+                    ringObj.element.style.borderColor = `rgba(0, 242, 255, ${0.3 + (currentWave * 0.5)})`;
+                    ringObj.element.style.boxShadow = `0 0 ${currentWave * 15}px rgba(0, 242, 255, ${currentWave * 0.4})`;
+                } else {
+                    ringObj.element.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+                    ringObj.element.style.boxShadow = 'none';
+                }
+            });
+        }
+
+        updateVisuals();
+            
     </script>
 </body>
 </html>
