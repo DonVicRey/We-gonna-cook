@@ -51,7 +51,6 @@
             border: 1.5px solid rgba(0, 217, 255, 0.3);
             border-radius: 50%;
             transform-style: preserve-3d;
-            transition: border-radius 0.1s ease, border-color 0.1s ease;
         }
 
         .eye-socket {
@@ -80,7 +79,14 @@
             top: 32.5%;
             left: 32.5%;
             box-shadow: 0 0 25px #fff, 0 0 50px #00f2ff;
-            transition: transform 0.05s ease-out;
+        }
+
+        .data-stream {
+            position: absolute;
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, #00f2ff, transparent);
+            opacity: 0.4;
         }
 
         .hologram-plate {
@@ -90,41 +96,6 @@
             border: 1px solid rgba(0, 242, 255, 0.1);
             transform: rotateX(85deg) translateZ(-50px);
             background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 242, 255, 0.03) 2px);
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 40px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        button {
-            background: rgba(0, 242, 255, 0.05);
-            border: 1px solid #00f2ff;
-            color: #00f2ff;
-            padding: 12px 24px;
-            font-family: monospace;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2), inset 0 0 10px rgba(0, 242, 255, 0.1);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(4px);
-        }
-
-        button:hover {
-            background: rgba(0, 242, 255, 0.15);
-            box-shadow: 0 0 25px rgba(0, 242, 255, 0.5), inset 0 0 15px rgba(0, 242, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        button:active {
-            transform: translateY(1px);
         }
     </style>
 </head>
@@ -139,71 +110,12 @@
         </div>
     </div>
 
-    <div class="controls">
-        <button id="speakBtn" onclick="speak('System fully operational. Vocal synchronization algorithms online. Ready for execution.')">Start communication</button>
-    </div>
-
     <script>
-        let isSpeaking = false;
-        let speechWaveform = 0; 
-        let speechPitchModifier = 1;
-        let animationFrameId;
-
-        const synth = window.speechSynthesis;
-        let femaleVoice = null;
-
-        function loadVoices() {
-            const voices = synth.getVoices();
-            femaleVoice = voices.find(voice => 
-                voice.name.toLowerCase().includes('female') || 
-                voice.name.toLowerCase().includes('zira') || 
-                voice.name.toLowerCase().includes('samantha') ||
-                voice.name.toLowerCase().includes('google uk english female')
-            );
-            if (!femaleVoice && voices.length > 0) {
-                femaleVoice = voices[0]; 
-            }
-        }
-
-        loadVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-
-        function speak(text) {
-            if (synth.speaking) {
-                synth.cancel();
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            if (femaleVoice) {
-                utterance.voice = femaleVoice;
-            }
-            
-            utterance.pitch = 1.2; 
-            utterance.rate = 0.95;  
-
-            utterance.onstart = () => {
-                isSpeaking = true;
-            };
-
-            utterance.onend = () => {
-                isSpeaking = false;
-            };
-
-            utterance.onerror = () => {
-                isSpeaking = false;
-            };
-
-            synth.speak(utterance);
-        }
-        
         const core = document.getElementById('core');
         const pupil = document.getElementById('pupil');
         const scene = document.querySelector('.scene');
 
         const ringCount = window.innerWidth < 600 ? 5 : 8;
-        const ringsArray = [];
 
         for (let i = 0; i < ringCount; i++) {
             const ring = document.createElement('div');
@@ -211,18 +123,14 @@
             const size = 150 + i * (window.innerWidth < 600 ? 25 : 35);
             ring.style.width = `${size}px`;
             ring.style.height = `${size}px`;
-            
-            const baseTransform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
-            ring.dataset.baseTransform = baseTransform;
-            ring.style.transform = baseTransform;
-            
+            ring.style.transform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
+            ring.style.animation = `rotate ${12 + i}s linear infinite`;
             core.appendChild(ring);
-            ringsArray.push({
-                element: ring,
-                baseTransform: baseTransform,
-                phase: i * 0.5
-            });
         }
+
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes rotate { from { transform: rotateX(70deg) rotateZ(0deg); } to { transform: rotateX(70deg) rotateZ(360deg); } }`;
+        document.head.appendChild(style);
 
         const moveEvent = (e) => {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -241,45 +149,10 @@
         document.addEventListener('mousemove', moveEvent);
         document.addEventListener('touchmove', moveEvent);
 
-        function updateVisuals() {
-            animationFrameId = requestAnimationFrame(updateVisuals);
-
-            if (isSpeaking) {
-                speechWaveform = Math.sin(Date.now() * 0.015) * 0.4 + 0.6;
-                speechWaveform += (Math.random() - 0.5) * 0.3; 
-                speechPitchModifier = 1 + (Math.sin(Date.now() * 0.03) * 0.2);
-            } else {
-                speechWaveform = speechWaveform * 0.8; 
-                if (speechWaveform < 0.01) speechWaveform = 0;
-                speechPitchModifier = 1;
-            }
-
-            ringsArray.forEach((ringObj, index) => {
-                const currentWave = speechWaveform * (1 + index * 0.15);
-                const currentPitch = speechPitchModifier;
-                
-                const scale = 1 + (currentWave * 0.12);
-                
-                const waveA = 50 + (Math.sin((Date.now() * 0.01) + index) * (currentWave * 25) * currentPitch);
-                const waveB = 50 + (Math.cos((Date.now() * 0.01) + index) * (currentWave * 25) * currentPitch);
-                const waveC = 50 + (Math.sin((Date.now() * 0.015) - index) * (currentWave * 20));
-                const waveD = 50 + (Math.cos((Date.now() * 0.005) + index) * (currentWave * 20));
-
-                ringObj.element.style.transform = `${ringObj.baseTransform} scale(${scale})`;
-                ringObj.element.style.borderRadius = `${waveA}% ${waveB}% ${waveC}% ${waveD}%`;
-                
-                if (isSpeaking) {
-                    ringObj.element.style.borderColor = `rgba(0, 242, 255, ${0.3 + (currentWave * 0.5)})`;
-                    ringObj.element.style.boxShadow = `0 0 ${currentWave * 15}px rgba(0, 242, 255, ${currentWave * 0.4})`;
-                } else {
-                    ringObj.element.style.borderColor = 'rgba(0, 217, 255, 0.3)';
-                    ringObj.element.style.boxShadow = 'none';
-                }
-            });
-        }
-
-        updateVisuals();
-            
+        setInterval(() => {
+            pupil.style.filter = `underline hue-rotate(${Math.random() * 360}deg)`;
+            setTimeout(() => pupil.style.filter = 'none', 150);
+        }, 5000);
     </script>
 </body>
 </html>
