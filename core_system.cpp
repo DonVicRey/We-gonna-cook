@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <chrono>
+#include <string> //baahh 🐐
 
 // Using extern "C" prevents C++ name mangling, letting Python read functions cleanly
 extern "C" {
