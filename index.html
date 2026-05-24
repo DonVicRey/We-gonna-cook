@@ -26,7 +26,6 @@
             perspective: 1400px;
         }
 
-        /* Ambient background grid */
         .grid-bg {
             position: absolute;
             width: 200%;
@@ -40,7 +39,6 @@
             z-index: 1;
         }
 
-        /* Main 3D Scene Wrapper */
         .scene {
             position: relative;
             z-index: 2;
@@ -51,7 +49,6 @@
             transition: transform 0.1s ease-out;
         }
 
-        /* The Bright Blue 4-Ring Saturn Core */
         .core-container {
             width: 240px;
             height: 240px;
@@ -72,13 +69,11 @@
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* Saturn-style 4-Ring Orbital Arrays */
         .ring-1 { transform: rotateX(75deg) rotateY(-15deg); animation: spin1 7s linear infinite; }
         .ring-2 { transform: rotateX(65deg) rotateY(20deg); animation: spin2 10s linear infinite; }
         .ring-3 { transform: rotateX(-35deg) rotateY(45deg); animation: spin3 12s linear infinite; }
         .ring-4 { transform: rotateX(25deg) rotateY(80deg); animation: spin4 8s linear infinite; }
         
-        /* Central Plasma Eye */
         .pupil {
             position: absolute;
             top: 90px;
@@ -90,90 +85,15 @@
             box-shadow: 0 0 35px var(--neon-blue);
             transition: transform 0.08s ease-out;
         }
-
-        /* --- ACTIVE BEAMING GRAPHICS OVERRIDES --- */
-        
-        /* Thinking/Listening State: Vibrant processing glow */
-        .scene.listening .ring {
-            border-color: #00ffcc;
-            box-shadow: 0 0 35px rgba(0, 255, 204, 0.8), inset 0 0 20px rgba(0, 255, 204, 0.4);
-        }
-        .scene.listening .pupil {
-            background: radial-gradient(circle, #fff 15%, #00ffcc 75%, transparent 100%);
-            box-shadow: 0 0 50px #00ffcc;
-            animation: beamPulse 0.6s infinite alternate;
-        }
-
-        /* Transmitting/Speaking State: Massive volumetric scale explosion */
-        .scene.speaking .ring {
-            border-color: #ffffff;
-            box-shadow: 0 0 50px rgba(0, 240, 255, 1), inset 0 0 30px rgba(0, 240, 255, 0.6);
-            transform: scale(1.2) rotateX(60deg);
-        }
-        .scene.speaking .ring-1 { transform: scale(1.25) rotateX(75deg) rotateY(-15deg); }
-        .scene.speaking .ring-2 { transform: scale(1.20) rotateX(65deg) rotateY(20deg); }
-        .scene.speaking .ring-3 { transform: scale(1.15) rotateX(-35deg) rotateY(45deg); }
-        .scene.speaking .ring-4 { transform: scale(1.10) rotateX(25deg) rotateY(80deg); }
-
-        .scene.speaking .pupil {
-            box-shadow: 0 0 70px 25px rgba(0, 240, 255, 0.85);
-            animation: vocalFluctuation 0.12s infinite alternate;
-        }
-
-        /* Interface Overlay Systems */
-        .terminal-panel {
-            margin-top: 50px;
-            width: 500px;
-            height: 160px;
-            background: rgba(4, 8, 14, 0.9);
-            border: 1px solid rgba(0, 240, 255, 0.25);
-            border-radius: 4px;
-            padding: 15px;
-            overflow-y: auto;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-        }
-
-        .log-entry {
-            font-size: 0.85rem;
-            line-height: 1.5;
-            margin-bottom: 8px;
-            padding-left: 10px;
-            border-left: 2px solid transparent;
-        }
-        .user-request { color: #00ffcc; border-left-color: #00ffcc; }
-        .jarvis-response { color: var(--neon-blue); border-left-color: var(--neon-blue); }
-        .system-status { color: #ffbc00; }
-
-        .status-banner {
-            margin-bottom: 30px;
-            font-size: 0.85rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: rgba(0, 240, 255, 0.8);
-            text-shadow: 0 0 8px var(--neon-glow);
-        }
-
-        /* 3D Rotational Matrix Core Animations */
         @keyframes spin1 { 0% { transform: rotateX(75deg) rotateY(-15deg) rotateZ(0deg); } 100% { transform: rotateX(75deg) rotateY(-15deg) rotateZ(360deg); } }
         @keyframes spin2 { 0% { transform: rotateX(65deg) rotateY(20deg) rotateZ(0deg); } 100% { transform: rotateX(65deg) rotateY(20deg) rotateZ(-360deg); } }
         @keyframes spin3 { 0% { transform: rotateX(-35deg) rotateY(45deg) rotateZ(0deg); } 100% { transform: rotateX(-35deg) rotateY(45deg) rotateZ(360deg); } }
         @keyframes spin4 { 0% { transform: rotateX(25deg) rotateY(80deg) rotateZ(0deg); } 100% { transform: rotateX(25deg) rotateY(80deg) rotateZ(-360deg); } }
-        
-        @keyframes beamPulse {
-            0% { transform: scale(0.95); filter: brightness(0.9); }
-            100% { transform: scale(1.25); filter: brightness(1.3); }
-        }
-        @keyframes vocalFluctuation {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.35); opacity: 1; filter: sepia(0.2); }
-        }
     </style>
 </head>
 <body>
 
     <div class="grid-bg"></div>
-
-    <div class="status-banner" id="statusField">SYSTEM STANDBY // SECTOR UNLINKED // CLICK CORE TO AWAKEN</div>
 
     <div class="scene" id="sceneContainer">
         <div class="core-container" id="jarvisCore">
@@ -185,155 +105,23 @@
         </div>
     </div>
 
-    <div class="terminal-panel" id="terminalLogs">
-        <div class="log-entry system-status">> Initialize handshaking protocol by interacting with the Saturn core...</div>
-    </div>
-
     <script>
-        // --- BACKEND AI ROUTING MAP ---
-        const API_KEY = "YOUR_API_KEY_HERE"; 
-        const API_URL = "https://api.openai.com/v1/chat/completions";
-        const AI_MODEL = "gpt-4o-mini"; 
-
         const scene = document.getElementById('sceneContainer');
-        const core = document.getElementById('jarvisCore');
         const pupil = document.getElementById('pupil');
-        const logs = document.getElementById('terminalLogs');
-        const statusField = document.getElementById('statusField');
-
-        let recognition = null;
-        let activeUtterance = null;
-        let isSystemOnline = false;
-        let jarvisIsSpeaking = false;
-
-        function pushLog(text, className = "") {
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${className}`;
-            entry.innerText = `> ${text}`;
-            logs.appendChild(entry);
-            logs.scrollTop = logs.scrollHeight;
-        }
-
-        // Kinetic Tracking
         document.addEventListener('mousemove', (e) => {
             const x = (window.innerWidth / 2 - e.clientX) / 30;
             const y = (window.innerHeight / 2 - e.clientY) / 30;
             scene.style.transform = `rotateX(${y}deg) rotateY(${-x}deg)`;
-            
-            if (!jarvisIsSpeaking) {
+            pupil.style.transform = `translate(${-x * 1.2}px, ${-y * 1.2}px)`;
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                const x = (window.innerWidth / 2 - e.touches[0].clientX) / 30;
+                const y = (window.innerHeight / 2 - e.touches[0].clientY) / 30;
+                scene.style.transform = `rotateX(${y}deg) rotateY(${-x}deg)`;
                 pupil.style.transform = `translate(${-x * 1.2}px, ${-y * 1.2}px)`;
             }
-        });
-
-        // Initialize Audio Subsystems via User Gesture Gate
-        function initializeJarvisCore() {
-            if (isSystemOnline) return;
-
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                pushLog("CRITICAL: Structural Speech Recognition runtime missing.", "system-status");
-                statusField.innerText = "COMPATIBILITY ERROR";
-                return;
-            }
-
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-
-            recognition.onstart = () => {
-                if (!jarvisIsSpeaking) {
-                    scene.classList.add('listening');
-                    statusField.innerText = "CORE STATUS: LISTENING...";
-                }
-            };
-
-            recognition.onerror = (e) => {
-                if (e.error !== 'no-speech') pushLog(`CORE FAULT: ${e.error}`, "system-status");
-            };
-
-            recognition.onend = () => {
-                if (!jarvisIsSpeaking && isSystemOnline) recognition.start();
-            };
-
-            recognition.onresult = (event) => {
-                const currentResultIndex = event.resultIndex;
-                const transcript = event.results[currentResultIndex][0].transcript.trim();
-                
-                pushLog(`USER // "${transcript}"`, "user-request");
-                processCommand(transcript);
-            };
-
-            isSystemOnline = true;
-            recognition.start();
-            speak("Saturn matrix online, sir. Cloud data pipelines ready for input.");
-        }
-
-        // Asynchronous AI Processing Engine
-        async function processCommand(cmd) {
-            // Put the core into the bright cyan "thinking" beaming mode
-            scene.classList.remove('speaking');
-            scene.classList.add('listening');
-            statusField.innerText = "CORE STATUS: PROCESSING CLOUD DATA VECTOR...";
-
-            const systemInstruction = "You are J.A.R.V.I.S., a sleek, highly advanced conversational AI matrix. Your tone is crisp, professional, and slightly dry. Keep your answers remarkably brief—under three sentences—so they stream naturally into a speech synthesizer. Do not use markdown lists or markdown formatting symbols in your output text.";
-
-        //baaahh 🐐
-            try {
-        
-                const response = await fetch("http://127.0.0.1:5000/api/command", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        command: cmd
-                    })
-                });
-
-                if (!response.ok) throw new Error(`Gateway returned code ${response.status}`);
-
-                const payload = await response.json();
-                const textResult = payload.reply.trim();
-
-                scene.classList.remove('listening');
-                speak(textResult);
-
-            } catch (err) {
-                console.error("Pipeline breakdown:", err);
-                scene.classList.remove('listening');
-                speak("Apologies, sir. The remote link threw an unexpected timeout fault. I am recovering local baselines.");
-            }
-        }
-
-        // Voice Synthesizer Subroutine (Pinned instance to dodge Chrome garbage collection bugs)
-        function speak(text) {
-            jarvisIsSpeaking = true;
-            scene.classList.remove('listening');
-            scene.classList.add('speaking');
-            statusField.innerText = "CORE STATUS: AUDIO TRANSMISSION SYNCING...";
-            pushLog(`JARVIS // "${text}"`, "jarvis-response");
-
-            if (recognition) recognition.stop();
-
-            activeUtterance = new SpeechSynthesisUtterance(text);
-            activeUtterance.pitch = 0.85; 
-            activeUtterance.rate = 1.06;  
-
-            activeUtterance.onend = () => {
-                jarvisIsSpeaking = false;
-                scene.classList.remove('speaking');
-                activeUtterance = null;
-                
-                if (isSystemOnline) recognition.start();
-            };
-
-            window.speechSynthesis.speak(activeUtterance);
-        }
-
-        // Boot Trigger listener
-        core.addEventListener('click', () => {
-            initializeJarvisCore();
         });
     </script>
 </body>
