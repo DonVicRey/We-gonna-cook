@@ -2,127 +2,157 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS Lunar-Saturn Core</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Core Interface</title>
     <style>
-        :root {
-            --neon-blue: #00f0ff;
-            --neon-glow: rgba(0, 240, 255, 0.45);
-            --dark-bg: #06090e;
-        }
-
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--dark-bg);
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            background-color: #000;
             overflow: hidden;
-            perspective: 1400px;
-        }
-
-        .grid-bg {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background-image: 
-                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            transform: rotateX(65deg) translateY(-300px);
-            opacity: 0.6;
-            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            perspective: 1200px;
         }
 
         .scene {
+            width: 80vw;
+            height: 80vw;
+            max-width: 400px;
+            max-height: 400px;
             position: relative;
-            z-index: 2;
             transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            transition: transform 0.1s ease-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-15px) rotateY(5deg); }
         }
 
         .core-container {
-            width: 240px;
-            height: 240px;
-            position: relative;
+            position: absolute;
             transform-style: preserve-3d;
-            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .ring {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 2px solid var(--neon-blue);
+            border: 1.5px solid rgba(0, 217, 255, 0.3);
             border-radius: 50%;
-            box-shadow: 0 0 20px var(--neon-glow), inset 0 0 20px var(--neon-glow);
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-style: preserve-3d;
         }
 
-        .ring-1 { transform: rotateX(75deg) rotateY(-15deg); animation: spin1 7s linear infinite; }
-        .ring-2 { transform: rotateX(65deg) rotateY(20deg); animation: spin2 10s linear infinite; }
-        .ring-3 { transform: rotateX(-35deg) rotateY(45deg); animation: spin3 12s linear infinite; }
-        .ring-4 { transform: rotateX(25deg) rotateY(80deg); animation: spin4 8s linear infinite; }
-        
+        .eye-socket {
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            border: 3px solid #00f2ff;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #00f2ff, inset 0 0 15px #00f2ff;
+            background: radial-gradient(circle, rgba(0,242,255,0.15) 0%, transparent 75%);
+            animation: pulse 2.5s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
         .pupil {
             position: absolute;
-            top: 90px;
-            left: 90px;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, #ffffff 20%, var(--neon-blue) 70%, transparent 100%);
+            width: 35%;
+            height: 35%;
+            background: #fff;
             border-radius: 50%;
-            box-shadow: 0 0 35px var(--neon-blue);
-            transition: transform 0.08s ease-out;
+            top: 32.5%;
+            left: 32.5%;
+            box-shadow: 0 0 25px #fff, 0 0 50px #00f2ff;
         }
-        @keyframes spin1 { 0% { transform: rotateX(75deg) rotateY(-15deg) rotateZ(0deg); } 100% { transform: rotateX(75deg) rotateY(-15deg) rotateZ(360deg); } }
-        @keyframes spin2 { 0% { transform: rotateX(65deg) rotateY(20deg) rotateZ(0deg); } 100% { transform: rotateX(65deg) rotateY(20deg) rotateZ(-360deg); } }
-        @keyframes spin3 { 0% { transform: rotateX(-35deg) rotateY(45deg) rotateZ(0deg); } 100% { transform: rotateX(-35deg) rotateY(45deg) rotateZ(360deg); } }
-        @keyframes spin4 { 0% { transform: rotateX(25deg) rotateY(80deg) rotateZ(0deg); } 100% { transform: rotateX(25deg) rotateY(80deg) rotateZ(-360deg); } }
+
+        .data-stream {
+            position: absolute;
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, #00f2ff, transparent);
+            opacity: 0.4;
+        }
+
+        .hologram-plate {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            border: 1px solid rgba(0, 242, 255, 0.1);
+            transform: rotateX(85deg) translateZ(-50px);
+            background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 242, 255, 0.03) 2px);
+        }
     </style>
 </head>
 <body>
 
-    <div class="grid-bg"></div>
-
-    <div class="scene" id="sceneContainer">
-        <div class="core-container" id="jarvisCore">
-            <div class="ring ring-1"></div>
-            <div class="ring ring-2"></div>
-            <div class="ring ring-3"></div>
-            <div class="ring ring-4"></div>
-            <div class="pupil" id="pupil"></div>
+    <div class="scene">
+        <div class="hologram-plate"></div>
+        <div class="core-container" id="core">
+            <div class="eye-socket">
+                <div class="pupil" id="pupil"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        const scene = document.getElementById('sceneContainer');
+        const core = document.getElementById('core');
         const pupil = document.getElementById('pupil');
-        document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.clientX) / 30;
-            const y = (window.innerHeight / 2 - e.clientY) / 30;
-            scene.style.transform = `rotateX(${y}deg) rotateY(${-x}deg)`;
-            pupil.style.transform = `translate(${-x * 1.2}px, ${-y * 1.2}px)`;
-        });
-        
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                const x = (window.innerWidth / 2 - e.touches[0].clientX) / 30;
-                const y = (window.innerHeight / 2 - e.touches[0].clientY) / 30;
-                scene.style.transform = `rotateX(${y}deg) rotateY(${-x}deg)`;
-                pupil.style.transform = `translate(${-x * 1.2}px, ${-y * 1.2}px)`;
-            }
-        });
+        const scene = document.querySelector('.scene');
+
+        const ringCount = window.innerWidth < 600 ? 5 : 8;
+
+        for (let i = 0; i < ringCount; i++) {
+            const ring = document.createElement('div');
+            ring.className = 'ring';
+            const size = 150 + i * (window.innerWidth < 600 ? 25 : 35);
+            ring.style.width = `${size}px`;
+            ring.style.height = `${size}px`;
+            ring.style.transform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
+            ring.style.animation = `rotate ${12 + i}s linear infinite`;
+            core.appendChild(ring);
+        }
+
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes rotate { from { transform: rotateX(70deg) rotateZ(0deg); } to { transform: rotateX(70deg) rotateZ(360deg); } }`;
+        document.head.appendChild(style);
+
+        const moveEvent = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const x = (window.innerWidth / 2 - clientX) / 20;
+            const y = (window.innerHeight / 2 - clientY) / 20;
+            
+            core.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+            
+            const px = (clientX - window.innerWidth / 2) / 30;
+            const py = (clientY - window.innerHeight / 2) / 30;
+            pupil.style.transform = `translate(${px}px, ${py}px)`;
+        };
+
+        document.addEventListener('mousemove', moveEvent);
+        document.addEventListener('touchmove', moveEvent);
+
+        setInterval(() => {
+            pupil.style.filter = `underline hue-rotate(${Math.random() * 360}deg)`;
+            setTimeout(() => pupil.style.filter = 'none', 150);
+        }, 5000);
     </script>
 </body>
 </html>
