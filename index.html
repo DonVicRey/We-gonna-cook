@@ -278,31 +278,24 @@
 
             const systemInstruction = "You are J.A.R.V.I.S., a sleek, highly advanced conversational AI matrix. Your tone is crisp, professional, and slightly dry. Keep your answers remarkably brief—under three sentences—so they stream naturally into a speech synthesizer. Do not use markdown lists or markdown formatting symbols in your output text.";
 
+        //baaahh 🐐
             try {
-                // Network call to backend endpoint
-                const response = await fetch(API_URL, {
+        
+                const response = await fetch("http://127.0.0.1:5000/api/command", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${API_KEY}`
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: AI_MODEL,
-                        messages: [
-                            { role: "system", content: systemInstruction },
-                            { role: "user", content: cmd }
-                        ],
-                        temperature: 0.65,
-                        max_tokens: 120
+                        command: cmd
                     })
                 });
 
                 if (!response.ok) throw new Error(`Gateway returned code ${response.status}`);
 
                 const payload = await response.json();
-                const textResult = payload.choices[0].message.content.trim();
+                const textResult = payload.reply.trim();
 
-                // Drop the thinking state, then hand the text over to the speaking renderer
                 scene.classList.remove('listening');
                 speak(textResult);
 
