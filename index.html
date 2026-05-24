@@ -165,7 +165,7 @@ for (let i = 0; i < ringCount; i++) {
     ring.style.width = `${size}px`;
     ring.style.height = `${size}px`;
     
-    const baseTransform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
+    const baseTransform = `rotateX(70deg) rotateZ(${i * 45}deg)`;
     ring.dataset.baseTransform = baseTransform;
     ring.style.transform = baseTransform;
     
@@ -176,7 +176,6 @@ for (let i = 0; i < ringCount; i++) {
         phase: i * 0.5
     });
 }
-
         const moveEvent = (e) => {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -249,41 +248,39 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
                        }
 
         function updateVisuals() {
-    animationFrameId = requestAnimationFrame(updateVisuals);
+            animationFrameId = requestAnimationFrame(updateVisuals);
 
-    if (isSpeaking) {
-        speechWaveform = Math.sin(Date.now() * 0.015) * 0.4 + 0.6;
-        speechWaveform += (Math.random() - 0.5) * 0.3; 
-        speechPitchModifier = 1 + (Math.sin(Date.now() * 0.03) * 0.2);
-    } else {
-        speechWaveform = speechWaveform * 0.8; 
-        if (speechWaveform < 0.01) speechWaveform = 0;
-        speechPitchModifier = 1;
-    }
+            if (isSpeaking) {
+                speechWaveform = Math.sin(Date.now() * 0.004) * 0.2 + 0.3;
+                speechPitchModifier = 1;
+            } else {
+                speechWaveform = speechWaveform * 0.8; 
+                if (speechWaveform < 0.01) speechWaveform = 0;
+                speechPitchModifier = 1;
+            }
 
-    ringsArray.forEach((ringObj, index) => {
-        const currentWave = speechWaveform * (1 + index * 0.15);
-        const currentPitch = speechPitchModifier;
-        
-        const scale = 1 + (currentWave * 0.12);
-        
-        const waveA = 50 + (Math.sin((Date.now() * 0.01) + index) * (currentWave * 25) * currentPitch);
-        const waveB = 50 + (Math.cos((Date.now() * 0.01) + index) * (currentWave * 25) * currentPitch);
-        const waveC = 50 + (Math.sin((Date.now() * 0.015) - index) * (currentWave * 20));
-        const waveD = 50 + (Math.cos((Date.now() * 0.005) + index) * (currentWave * 20));
+            ringsArray.forEach((ringObj, index) => {
+                const currentWave = speechWaveform;
+                
+                const scale = 1 + (currentWave * 0.05);
+                
+                const waveA = 50 + (Math.sin((Date.now() * 0.003) + index) * (currentWave * 8));
+                const waveB = 50 + (Math.cos((Date.now() * 0.003) + index) * (currentWave * 8));
+                const waveC = 50 + (Math.sin((Date.now() * 0.003) - index) * (currentWave * 6));
+                const waveD = 50 + (Math.cos((Date.now() * 0.003) + index) * (currentWave * 6));
 
-        ringObj.element.style.transform = `${ringObj.baseTransform} scale(${scale})`;
-        ringObj.element.style.borderRadius = `${waveA}% ${waveB}% ${waveC}% ${waveD}%`;
-        
-        if (isSpeaking) {
-            ringObj.element.style.borderColor = `rgba(0, 242, 255, ${0.3 + (currentWave * 0.5)})`;
-            ringObj.element.style.boxShadow = `0 0 ${currentWave * 15}px rgba(0, 242, 255, ${currentWave * 0.4})`;
-        } else {
-            ringObj.element.style.borderColor = 'rgba(0, 217, 255, 0.3)';
-            ringObj.element.style.boxShadow = 'none';
+                ringObj.element.style.transform = `${ringObj.baseTransform} scale(${scale})`;
+                ringObj.element.style.borderRadius = `${waveA}% ${waveB}% ${waveC}% ${waveD}%`;
+                
+                if (isSpeaking) {
+                    ringObj.element.style.borderColor = `rgba(0, 242, 255, ${0.3 + (currentWave * 0.3)})`;
+                    ringObj.element.style.boxShadow = `0 0 ${currentWave * 10}px rgba(0, 242, 255, ${currentWave * 0.2})`;
+                } else {
+                    ringObj.element.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+                    ringObj.element.style.boxShadow = 'none';
+                }
+            });
         }
-    });
-}
 
 updateVisuals();
         
