@@ -46,6 +46,41 @@
             align-items: center;
         }
 
+        .controls {
+    position: absolute;
+    bottom: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+}
+
+button {
+    background: rgba(0, 242, 255, 0.05);
+    border: 1px solid #00f2ff;
+    color: #00f2ff;
+    padding: 12px 24px;
+    font-family: monospace;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2), inset 0 0 10px rgba(0, 242, 255, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+button:hover {
+    background: rgba(0, 242, 255, 0.15);
+    box-shadow: 0 0 25px rgba(0, 242, 255, 0.5), inset 0 0 15px rgba(0, 242, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+        
         .ring {
             position: absolute;
             border: 1.5px solid rgba(0, 217, 255, 0.3);
@@ -111,9 +146,9 @@
     </div>
 
     <div class="controls">
-    <button id="speakBtn" onclick="speak('System fully operational. Vocal synchronization algorithms online. Ready for execution.')">Initialize Speech</button>
+<button id="speakBtn" onclick="speak('System fully operational. Vocal synchronization algorithms online. Ready for execution.')">Start communication</button>
     </div>
-
+    
     <script>
         const core = document.getElementById('core');
         const pupil = document.getElementById('pupil');
@@ -121,20 +156,26 @@
 
         const ringCount = window.innerWidth < 600 ? 5 : 8;
 
-        for (let i = 0; i < ringCount; i++) {
-            const ring = document.createElement('div');
-            ring.className = 'ring';
-            const size = 150 + i * (window.innerWidth < 600 ? 25 : 35);
-            ring.style.width = `${size}px`;
-            ring.style.height = `${size}px`;
-            ring.style.transform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
-            ring.style.animation = `rotate ${12 + i}s linear infinite`;
-            core.appendChild(ring);
-        }
+        const ringsArray = [];
 
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes rotate { from { transform: rotateX(70deg) rotateZ(0deg); } to { transform: rotateX(70deg) rotateZ(360deg); } }`;
-        document.head.appendChild(style);
+for (let i = 0; i < ringCount; i++) {
+    const ring = document.createElement('div');
+    ring.className = 'ring';
+    const size = 150 + i * (window.innerWidth < 600 ? 25 : 35);
+    ring.style.width = `${size}px`;
+    ring.style.height = `${size}px`;
+    
+    const baseTransform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
+    ring.dataset.baseTransform = baseTransform;
+    ring.style.transform = baseTransform;
+    
+    core.appendChild(ring);
+    ringsArray.push({
+        element: ring,
+        baseTransform: baseTransform,
+        phase: i * 0.5
+    });
+}
 
         const moveEvent = (e) => {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
