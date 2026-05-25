@@ -3,317 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Core Interface</title>
+    <title>AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <style>
-        body {
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #000;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #0b0c10;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
-            perspective: none;
         }
 
-        .scene {
-            width: 80vw;
-            height: 80vw;
-            max-width: 400px;
-            max-height: 400px;
-            position: relative;  
-            animation: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotateY(0deg); }
-            50% { transform: translateY(-15px) rotateY(5deg); }
-        }
-
-        .core-container {
-            position: absolute;
-            transform-style: preserve-3d;
+        /* Mobile App Container Simulation */
+        .app-container {
             width: 100%;
-            height: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 850px;
+            background: radial-gradient(circle at center, #1a1b35 0%, #050508 100%);
+            position: relative;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        .controls {
-    position: absolute;
-    bottom: 40px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    z-index: 100;
-}
-
-button {
-    background: rgba(0, 242, 255, 0.05);
-    border: 1px solid #00f2ff;
-    color: #00f2ff;
-    padding: 12px 24px;
-    font-family: monospace;
-    font-size: 14px;
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2), inset 0 0 10px rgba(0, 242, 255, 0.1);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(4px);
-}
-
-button:hover {
-    background: rgba(0, 242, 255, 0.15);
-    box-shadow: 0 0 25px rgba(0, 242, 255, 0.5), inset 0 0 15px rgba(0, 242, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-button:active {
-    transform: translateY(1px);
-}
-        
-        .ring {
-            position: absolute;
-            border: 1.5px solid rgba(0, 217, 255, 0.3);
-            border-radius: 50%;
-            transform-style: preserve-3d;
-        }
-
-        .eye-socket {
-            position: absolute;
-            width: 30%;
-            height: 30%;
-            border: 3px solid #00f2ff;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #00f2ff, inset 0 0 15px #00f2ff;
-            background: radial-gradient(circle, rgba(0,242,255,0.15) 0%, transparent 75%);
-            animation: pulse 2.5s ease-in-out infinite;
+        /* Header Elements */
+        .header {
+            text-align: center;
+            padding: 40px 20px 0;
             z-index: 10;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-        }
-
-        .pupil {
-            position: absolute;
-            width: 35%;
-            height: 35%;
-            background: #fff;
+        .avatar {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            top: 32.5%;
-            left: 32.5%;
-            box-shadow: 0 0 25px #fff, 0 0 50px #00f2ff;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
-        .data-stream {
-            position: absolute;
-            width: 1px;
-            height: 40px;
-            background: linear-gradient(to bottom, transparent, #00f2ff, transparent);
-            opacity: 0.4;
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
         }
 
-        .hologram-plate {
-            position: absolute;
-            width: 150%;
-            height: 150%;
-            border: 1px solid rgba(0, 242, 255, 0.1);
-            transform: rotateX(85deg) translateZ(-50px);
-            background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 242, 255, 0.03) 2px);
+        .subtitle {
+            font-size: 0.9rem;
+            color: #a0a0b5;
+            font-weight: 300;
         }
 
-        #coreCanvas {
-            position: absolute;
+        /* 3D Canvas Container */
+        #canvas-container {
+            flex-grow: 1;
             width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 5;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -20px;
+        }
+
+        /* Bottom Information Text */
+        .info-panel {
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+            margin-bottom: 80px;
+        }
+
+        .info-panel p {
+            font-size: 0.95rem;
+            color: #b3b3c6;
+            margin-bottom: 5px;
+        }
+
+        .info-panel .highlight {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Bottom Navigation & Voice Wave */
+        .bottom-nav {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 20;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #8e8e9f;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .nav-btn:hover { color: #ffffff; }
+
+        .mic-btn-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mic-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+        }
+
+        /* CSS Voice Wave Effect */
+        .wave {
+            position: absolute;
+            width: 150px;
+            height: 40px;
+            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.6), transparent);
+            border-radius: 50%;
+            z-index: 1;
+            filter: blur(8px);
+            animation: pulseWave 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseWave {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.5; }
         }
     </style>
 </head>
 <body>
 
-    <div class="scene">
-        <div class="hologram-plate"></div>
-        <canvas id="coreCanvas"></canvas>
-        <div class="eye-socket">
-            <div class="pupil" id="pupil"></div>
+    <div class="app-container">
+        <header class="header">
+            <img src="https://ui-avatars.com/api/?name=Michael&background=random" alt="User Avatar" class="avatar">
+            <h1>Hi, Michael</h1>
+            <p class="subtitle">I can help</p>
+        </header>
+
+        <div id="canvas-container"></div>
+
+        <div class="info-panel">
+            <p>Michael's meeting with shareholders</p>
+            <p>It will be <span class="highlight">tomorrow at 3:00 PM</span></p>
         </div>
+
+        <nav class="bottom-nav">
+            <button class="nav-btn"><i class="fa-solid fa-house"></i></button>
+            
+            <div class="mic-btn-container">
+                <div class="wave"></div>
+                <div class="mic-btn">
+                    <i class="fa-solid fa-microphone"></i>
+                </div>
+            </div>
+            
+            <button class="nav-btn"><i class="fa-solid fa-sliders"></i></button>
+        </nav>
     </div>
 
-    <div class="controls">
-<button id="speakBtn" onclick="speak('System fully operational. Vocal synchronization algorithms online. Ready for execution.')">Start communication</button>
-    </div>
-    
     <script>
-        const canvas = document.getElementById('coreCanvas');
-        const ctx = canvas.getContext('2d');
-        const pupil = document.getElementById('pupil');
-
-        let isSpeaking = false;
-        let speechWaveform = 0;
-
-        let mouseX = 0;
-        let mouseY = 0;
-
-        function resizeCanvas() {
-            const size = canvas.clientWidth;
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = size * dpr;
-            canvas.height = size * dpr;
-            ctx.scale(dpr, dpr);
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        const container = document.getElementById('canvas-container');
         
-        const moveEvent = (e) => {
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const px = (clientX - window.innerWidth / 2) / 30;
-    const py = (clientY - window.innerHeight / 2) / 30;
-    pupil.style.transform = `translate(${px}px, ${py}px)`;
-};
-
-        document.addEventListener('mousemove', moveEvent);
-        document.addEventListener('touchmove', moveEvent);
-
-let speechPitchModifier = 1;
-let animationFrameId;
-
-const synth = window.speechSynthesis;
-let femaleVoice = null;m
-
-function loadVoices() {
-    const voices = synth.getVoices();
-    femaleVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('female') || 
-        voice.name.toLowerCase().includes('zira') || 
-        voice.name.toLowerCase().includes('samantha') ||
-        voice.name.toLowerCase().includes('google uk english female')
-    );
-    if (!femaleVoice && voices.length > 0) {
-        femaleVoice = voices[0]; 
-    }
-}
-
-loadVoices();
-if (speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = loadVoices;
-}
-
-        function speak(text) {
-    if (synth.speaking) {
-        synth.cancel();
-    }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (femaleVoice) {
-        utterance.voice = femaleVoice;
-    }
-    
-    utterance.pitch = 1.2; 
-    utterance.rate = 0.95;  
-
-    utterance.onstart = () => {
-        isSpeaking = true;
-    };
-
-    utterance.onend = () => {
-        isSpeaking = false;
-    };
-
-    utterance.onerror = () => {
-        isSpeaking = false;
-    };
-
-    synth.speak(utterance);
-                       }
-
-        function drawRing(centerX, centerY, radius, index) {
-            ctx.beginPath();
-            
-            const pointsCount = 120; 
-            const time = Date.now() * 0.004;
-            
-            for (let i = 0; i <= pointsCount; i++) {
-                const angle = (i / pointsCount) * Math.PI * 2;
-                
-                let waveOffset = 0;
-                if (isSpeaking) {
-                    // This creates the vibration without the spinning illusion
-                    const waveFrequency = 4; 
-                    const waveSpeed = time + (Math.sin(index) * 5);
-                    waveOffset = Math.sin(angle * waveFrequency - waveSpeed) * (speechWaveform * 15);
-                }
-                
-                // Calculate position in 2D space directly
-                const x = Math.cos(angle) * (radius + waveOffset);
-                const y = Math.sin(angle) * (radius + waveOffset);
-                
-                const finalX = centerX + x;
-                const finalY = centerY + y;
-                
-                if (i === 0) {
-                    ctx.moveTo(finalX, finalY);
-                } else {
-                    ctx.lineTo(finalX, finalY);
-                }
-            }
-            
-            ctx.strokeStyle = `rgba(0, 242, 255, ${0.15 + (speechWaveform * 0.35)})`;
-            ctx.lineWidth = 1.5;
-            
-            if (isSpeaking) {
-                ctx.shadowBlur = speechWaveform * 12;
-                ctx.shadowColor = '#00f2ff';
-            } else {
-                ctx.shadowBlur = 0;
-            }
-            
-            ctx.stroke();
-        }
-
-        function updateVisuals() {
-            animationFrameId = requestAnimationFrame(updateVisuals);
-            
-            const size = canvas.width / (window.devicePixelRatio || 1);
-            ctx.clearRect(0, 0, size, size);
-            
-            if (isSpeaking) {
-                if (speechWaveform < 1) speechWaveform += 0.05;
-            } else {
-                if (speechWaveform > 0) speechWaveform -= 0.05;
-                if (speechWaveform < 0) speechWaveform = 0;
-            }
-            
-            const centerX = size / 2;
-            const centerY = size / 2;
-            const ringCount = window.innerWidth < 600 ? 5 : 8;
-            
-            const currentTiltX = 0;
-            const currentTiltY = 0;  
-            
-            for (let i = 0; i < ringCount; i++) {
-                const radius = 65 + i * (window.innerWidth < 600 ? 12 : 18);
-                drawRing(centerX, centerY, radius, i);
-        }
-        }
-
-updateVisuals();
+        // Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Particle Geometry (Creating the core sphere)
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 3500; // Adjust for density
+        const posArray = new Float32Array(particlesCount * 3);
+
+        // Math to map particles to a sphere with some random noise for the "energy" look
+        for(let i = 0; i < particlesCount * 3; i += 3) {
+            const radius = 1.8;
+            const theta = 2 * Math.PI * Math.random();
+            const phi = Math.acos(2 * Math.random() - 1);
+            
+            // Adding scatter/noise
+            const noise = (Math.random() - 0.5) * 0.4;
+            const r = radius + noise;
+
+            posArray[i] = r * Math.sin(phi) * Math.cos(theta);     // x
+            posArray[i+1] = r * Math.sin(phi) * Math.sin(theta);   // y
+            posArray[i+2] = r * Math.cos(phi);                     // z
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        // Material with Glow Effect
+        const material = new THREE.PointsMaterial({
+            size: 0.015,
+            color: 0xa8b8ff, // Bright purplish blue
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending // Crucial for the glowing energy effect
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, material);
+        scene.add(particlesMesh);
+
+        // Add a faint inner glowing core
+        const coreGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+        const coreMaterial = new THREE.MeshBasicMaterial({
+            color: 0x4B0082,
+            transparent: true,
+            opacity: 0.15,
+            blending: THREE.AdditiveBlending
+        });
+        const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+        scene.add(coreMesh);
+
+        camera.position.z = 4.5;
+
+        // Animation Loop
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+
+            // Rotate the particle sphere
+            particlesMesh.rotation.y += 0.002;
+            particlesMesh.rotation.x = Math.sin(elapsedTime * 0.2) * 0.2; // Slight wobble
+            
+            // Pulse the inner core
+            const scale = 1 + Math.sin(elapsedTime * 2) * 0.05;
+            coreMesh.scale.set(scale, scale, scale);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
     </script>
 </body>
-</html>
+</html>p
