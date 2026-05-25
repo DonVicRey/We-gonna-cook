@@ -259,27 +259,25 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
                 speechPitchModifier = 1;
             }
 
-            ringsArray.forEach((ringObj, index) => {
-                const currentWave = speechWaveform;
-                
-                const scale = 1 + (currentWave * 0.05);
-                
-                const waveA = 50 + (Math.sin((Date.now() * 0.003) + index) * (currentWave * 8));
-                const waveB = 50 + (Math.cos((Date.now() * 0.003) + index) * (currentWave * 8));
-                const waveC = 50 + (Math.sin((Date.now() * 0.003) - index) * (currentWave * 6));
-                const waveD = 50 + (Math.cos((Date.now() * 0.003) + index) * (currentWave * 6));
-
-                ringObj.element.style.transform = `${ringObj.baseTransform} scale(${scale})`;
-                ringObj.element.style.borderRadius = `${waveA}% ${waveB}% ${waveC}% ${waveD}%`;
-                
-                if (isSpeaking) {
-                    ringObj.element.style.borderColor = `rgba(0, 242, 255, ${0.3 + (currentWave * 0.3)})`;
-                    ringObj.element.style.boxShadow = `0 0 ${currentWave * 10}px rgba(0, 242, 255, ${currentWave * 0.2})`;
-                } else {
-                    ringObj.element.style.borderColor = 'rgba(0, 217, 255, 0.3)';
-                    ringObj.element.style.boxShadow = 'none';
-                }
-            });
+         ringsArray.forEach((ringObj, index) => {
+    const currentWave = speechWaveform;
+    const scale = 1 + (currentWave * 0.05);
+    const wave1 = Math.sin((Date.now() * 0.005) + (index * 0.5)) * (currentWave * 20);
+    const wave2 = Math.cos((Date.now() * 0.005) + (index * 0.5)) * (currentWave * 20);
+    const wave3 = Math.sin((Date.now() * 0.005) - (index * 0.5)) * (currentWave * 15);
+    const wave4 = Math.cos((Date.now() * 0.005) - (index * 0.5)) * (currentWave * 15);
+    const verticalOffset = (wave1 + wave2 + wave3 + wave4) * 0.5;
+    ringObj.element.style.transform = `${ringObj.baseTransform} translateZ(${verticalOffset}px) scale(${scale})`;
+    ringObj.element.style.borderRadius = '50%';
+    
+    if (isSpeaking) {
+        ringObj.element.style.borderColor = `rgba(0, 242, 255, ${0.3 + (currentWave * 0.3)})`;
+        ringObj.element.style.boxShadow = `0 0 ${currentWave * 10}px rgba(0, 242, 255, ${currentWave * 0.2})`;
+    } else {
+        ringObj.element.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+        ringObj.element.style.boxShadow = 'none';
+    }
+});
         }
 
 updateVisuals();
