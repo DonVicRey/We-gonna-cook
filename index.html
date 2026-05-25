@@ -1,158 +1,514 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Core Interface</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
-            perspective: 1200px;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Oracle — AI Interface</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Cinzel:wght@300;400&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .scene {
-            width: 80vw;
-            height: 80vw;
-            max-width: 400px;
-            max-height: 400px;
-            position: relative;
-            transform-style: preserve-3d;
-            animation: float 6s ease-in-out infinite;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  :root {
+    --col-bg:       #020509;
+    --col-deep:     #060d18;
+    --col-orb1:     #00c8ff;
+    --col-orb2:     #005f8a;
+    --col-accent:   #00e5ff;
+    --col-dim:      #1a3a50;
+    --col-text:     #b8dff0;
+    --col-sub:      #4d8fa8;
+    --col-danger:   #ff4d6a;
+    --col-gold:     #e8c96a;
+    --font-display: 'Cinzel', serif;
+    --font-ui:      'Rajdhani', sans-serif;
+    --font-mono:    'Share Tech Mono', monospace;
+  }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotateY(0deg); }
-            50% { transform: translateY(-15px) rotateY(5deg); }
-        }
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--col-bg); color:var(--col-text); font-family:var(--font-ui); }
 
-        .core-container {
-            position: absolute;
-            transform-style: preserve-3d;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  /* ─── SCAN LINES ─── */
+  body::after {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,200,255,.018) 2px, rgba(0,200,255,.018) 4px);
+  }
 
-        .ring {
-            position: absolute;
-            border: 1.5px solid rgba(0, 217, 255, 0.3);
-            border-radius: 50%;
-            transform-style: preserve-3d;
-        }
+  /* ─── LAYOUT ─── */
+  #app { display:grid; grid-template-columns:260px 1fr 260px; grid-template-rows:70px 1fr 160px; height:100vh; gap:0; position:relative; }
 
-        .eye-socket {
-            position: absolute;
-            width: 30%;
-            height: 30%;
-            border: 3px solid #00f2ff;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #00f2ff, inset 0 0 15px #00f2ff;
-            background: radial-gradient(circle, rgba(0,242,255,0.15) 0%, transparent 75%);
-            animation: pulse 2.5s ease-in-out infinite;
-            z-index: 10;
-        }
+  /* ─── TOP BAR ─── */
+  #topbar {
+    grid-column:1/-1; display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px; border-bottom:1px solid rgba(0,200,255,.15);
+    background: linear-gradient(90deg, rgba(0,30,50,.9) 0%, rgba(2,5,9,.6) 50%, rgba(0,30,50,.9) 100%);
+  }
+  #topbar .brand { font-family:var(--font-display); font-size:22px; letter-spacing:6px; color:var(--col-accent); text-shadow:0 0 20px rgba(0,229,255,.6); font-weight:300; }
+  #topbar .tagline { font-family:var(--font-mono); font-size:10px; color:var(--col-sub); letter-spacing:3px; }
+  #topbar .status-row { display:flex; gap:20px; align-items:center; }
+  .status-pill { font-family:var(--font-mono); font-size:9px; letter-spacing:2px; padding:4px 10px; border:1px solid; border-radius:2px; }
+  .status-pill.active { color:#00ff99; border-color:rgba(0,255,153,.4); background:rgba(0,255,153,.07); }
+  .status-pill.info   { color:var(--col-accent); border-color:rgba(0,229,255,.3); background:rgba(0,229,255,.05); }
+  #clock { font-family:var(--font-mono); font-size:12px; color:var(--col-sub); }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-        }
+  /* ─── LEFT PANEL ─── */
+  #left-panel {
+    grid-column:1; grid-row:2/4; padding:20px 16px;
+    border-right:1px solid rgba(0,200,255,.1);
+    background:rgba(0,10,20,.5);
+    display:flex; flex-direction:column; gap:16px; overflow:hidden;
+  }
+  .panel-title { font-family:var(--font-mono); font-size:9px; letter-spacing:3px; color:var(--col-sub); padding-bottom:8px; border-bottom:1px solid rgba(0,200,255,.12); }
 
-        .pupil {
-            position: absolute;
-            width: 35%;
-            height: 35%;
-            background: #fff;
-            border-radius: 50%;
-            top: 32.5%;
-            left: 32.5%;
-            box-shadow: 0 0 25px #fff, 0 0 50px #00f2ff;
-        }
+  .metric-row { display:flex; justify-content:space-between; align-items:center; }
+  .metric-label { font-size:10px; letter-spacing:2px; color:var(--col-sub); font-family:var(--font-mono); }
+  .metric-val   { font-size:13px; color:var(--col-accent); font-family:var(--font-mono); }
 
-        .data-stream {
-            position: absolute;
-            width: 1px;
-            height: 40px;
-            background: linear-gradient(to bottom, transparent, #00f2ff, transparent);
-            opacity: 0.4;
-        }
+  .bar-wrap { width:100%; height:4px; background:rgba(0,200,255,.1); border-radius:2px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--col-orb2),var(--col-accent)); transition:width .6s ease; }
 
-        .hologram-plate {
-            position: absolute;
-            width: 150%;
-            height: 150%;
-            border: 1px solid rgba(0, 242, 255, 0.1);
-            transform: rotateX(85deg) translateZ(-50px);
-            background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 242, 255, 0.03) 2px);
-        }
-    </style>
+  #quick-cmds { display:flex; flex-direction:column; gap:7px; }
+  .qcmd {
+    font-family:var(--font-mono); font-size:10px; letter-spacing:1px; color:var(--col-sub);
+    padding:7px 10px; border:1px solid rgba(0,200,255,.1); border-radius:2px;
+    cursor:pointer; transition:all .2s; background:rgba(0,30,50,.3);
+  }
+  .qcmd:hover { color:var(--col-accent); border-color:rgba(0,229,255,.4); background:rgba(0,229,255,.07); }
+  .qcmd::before { content:'› '; color:var(--col-dim); }
+
+  /* ─── CENTRE ─── */
+  #centre { grid-column:2; grid-row:2; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; }
+  #canvas-container { width:360px; height:360px; position:relative; }
+  #canvas-container canvas { display:block; }
+
+  /* ring decorations */
+  .ring {
+    position:absolute; top:50%; left:50%; border-radius:50%;
+    border:1px solid rgba(0,200,255,.15); pointer-events:none;
+    transform:translate(-50%,-50%);
+  }
+  .ring1 { width:400px; height:400px; animation:spin 18s linear infinite; }
+  .ring2 { width:460px; height:460px; border-style:dashed; animation:spin 30s linear infinite reverse; border-color:rgba(0,200,255,.08); }
+
+  @keyframes spin { to { transform:translate(-50%,-50%) rotate(360deg); } }
+
+  /* tick marks on ring1 */
+  .ring1::before {
+    content:''; position:absolute; top:50%; left:50%;
+    width:6px; height:6px; border-radius:50%; background:var(--col-accent);
+    box-shadow:0 0 8px var(--col-accent); transform:translate(-50%,-50%) translateY(-199px);
+  }
+
+  #oracle-state {
+    font-family:var(--font-display); font-size:13px; letter-spacing:4px; color:var(--col-sub);
+    margin-top:18px; min-height:20px; transition:color .4s;
+  }
+  #oracle-state.speaking { color:var(--col-accent); animation:pulse-text 1.2s ease-in-out infinite; }
+  @keyframes pulse-text { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  /* wave bars shown while speaking */
+  #wave { display:flex; align-items:center; gap:3px; height:24px; margin-top:8px; opacity:0; transition:opacity .3s; }
+  #wave.active { opacity:1; }
+  #wave span {
+    display:block; width:3px; border-radius:2px; background:var(--col-accent);
+    animation:wave-bar 1s ease-in-out infinite;
+    box-shadow:0 0 6px var(--col-accent);
+  }
+  #wave span:nth-child(1){ height:8px;  animation-delay:0s; }
+  #wave span:nth-child(2){ height:16px; animation-delay:.1s; }
+  #wave span:nth-child(3){ height:22px; animation-delay:.2s; }
+  #wave span:nth-child(4){ height:14px; animation-delay:.3s; }
+  #wave span:nth-child(5){ height:20px; animation-delay:.15s; }
+  #wave span:nth-child(6){ height:10px; animation-delay:.25s; }
+  #wave span:nth-child(7){ height:18px; animation-delay:.05s; }
+  @keyframes wave-bar { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(.3)} }
+
+  /* ─── BOTTOM CENTRE ─── */
+  #bottom-centre { grid-column:2; grid-row:3; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:0 20px; }
+
+  /* transcript strip */
+  #transcript-strip {
+    width:100%; max-width:520px; min-height:34px; padding:8px 14px;
+    background:rgba(0,30,50,.5); border:1px solid rgba(0,200,255,.15); border-radius:2px;
+    font-family:var(--font-mono); font-size:11px; color:var(--col-sub);
+    text-align:center; letter-spacing:.5px;
+  }
+  #transcript-strip.listening { border-color:rgba(0,229,255,.5); color:var(--col-accent); }
+
+  /* mic + type row */
+  #input-row { display:flex; gap:10px; width:100%; max-width:520px; }
+  #text-input {
+    flex:1; background:rgba(0,15,30,.7); border:1px solid rgba(0,200,255,.2); border-radius:2px;
+    color:var(--col-text); font-family:var(--font-mono); font-size:12px; padding:10px 14px;
+    outline:none; transition:border-color .2s; letter-spacing:.5px;
+  }
+  #text-input:focus { border-color:rgba(0,229,255,.5); }
+  #text-input::placeholder { color:var(--col-dim); }
+
+  .btn {
+    padding:10px 18px; border:1px solid rgba(0,200,255,.3); border-radius:2px;
+    background:rgba(0,200,255,.07); color:var(--col-accent); font-family:var(--font-ui);
+    font-size:12px; letter-spacing:2px; cursor:pointer; transition:all .2s; white-space:nowrap;
+  }
+  .btn:hover { background:rgba(0,200,255,.15); border-color:rgba(0,229,255,.6); box-shadow:0 0 12px rgba(0,229,255,.2); }
+  .btn.mic-active { background:rgba(0,229,255,.2); border-color:var(--col-accent); box-shadow:0 0 18px rgba(0,229,255,.35); color:#fff; }
+  .btn.danger { border-color:rgba(255,77,106,.3); color:var(--col-danger); background:rgba(255,77,106,.07); }
+  .btn.danger:hover { background:rgba(255,77,106,.15); }
+
+  /* ─── RIGHT PANEL ─── */
+  #right-panel {
+    grid-column:3; grid-row:2/4; padding:20px 16px;
+    border-left:1px solid rgba(0,200,255,.1);
+    background:rgba(0,10,20,.5);
+    display:flex; flex-direction:column; gap:14px; overflow:hidden;
+  }
+
+  /* dialogue log */
+  #log { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  #log::-webkit-scrollbar { width:3px; }
+  #log::-webkit-scrollbar-track { background:transparent; }
+  #log::-webkit-scrollbar-thumb { background:rgba(0,200,255,.3); border-radius:2px; }
+
+  .log-entry { font-family:var(--font-mono); font-size:10px; line-height:1.55; padding:8px 10px; border-radius:2px; animation:fade-in .3s ease; }
+  @keyframes fade-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+  .log-entry.user    { background:rgba(0,50,80,.4); border-left:2px solid var(--col-sub); color:var(--col-text); }
+  .log-entry.oracle  { background:rgba(0,80,100,.25); border-left:2px solid var(--col-accent); color:#d0f0ff; }
+  .log-entry .lbl    { font-size:8px; letter-spacing:2px; margin-bottom:4px; }
+  .log-entry.user .lbl  { color:var(--col-sub); }
+  .log-entry.oracle .lbl { color:var(--col-accent); }
+
+  /* corner decorations */
+  .corner { position:fixed; width:40px; height:40px; pointer-events:none; }
+  .corner.tl { top:8px; left:8px; border-top:1px solid rgba(0,200,255,.35); border-left:1px solid rgba(0,200,255,.35); }
+  .corner.tr { top:8px; right:8px; border-top:1px solid rgba(0,200,255,.35); border-right:1px solid rgba(0,200,255,.35); }
+  .corner.bl { bottom:8px; left:8px; border-bottom:1px solid rgba(0,200,255,.35); border-left:1px solid rgba(0,200,255,.35); }
+  .corner.br { bottom:8px; right:8px; border-bottom:1px solid rgba(0,200,255,.35); border-right:1px solid rgba(0,200,255,.35); }
+</style>
 </head>
 <body>
 
-    <div class="scene">
-        <div class="hologram-plate"></div>
-        <div class="core-container" id="core">
-            <div class="eye-socket">
-                <div class="pupil" id="pupil"></div>
-            </div>
-        </div>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div id="app">
+
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <div>
+      <div class="brand">ORACLE</div>
+      <div class="tagline">ADVANCED INTELLIGENCE SYSTEM · BUILD 7.4.2</div>
+    </div>
+    <div class="status-row">
+      <span class="status-pill active">● ONLINE</span>
+      <span class="status-pill info" id="mode-pill">STANDBY</span>
+      <span id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <!-- LEFT PANEL -->
+  <aside id="left-panel">
+    <div class="panel-title">SYSTEM DIAGNOSTICS</div>
+
+    <div>
+      <div class="metric-row"><span class="metric-label">NEURAL CORE</span><span class="metric-val" id="m-neural">98.4%</span></div>
+      <div class="bar-wrap" style="margin-top:5px"><div class="bar-fill" id="b-neural" style="width:98.4%"></div></div>
+    </div>
+    <div>
+      <div class="metric-row"><span class="metric-label">VOICE ENGINE</span><span class="metric-val" id="m-voice">100%</span></div>
+      <div class="bar-wrap" style="margin-top:5px"><div class="bar-fill" id="b-voice" style="width:100%"></div></div>
+    </div>
+    <div>
+      <div class="metric-row"><span class="metric-label">COGNITION</span><span class="metric-val" id="m-cog">87.1%</span></div>
+      <div class="bar-wrap" style="margin-top:5px"><div class="bar-fill" id="b-cog" style="width:87.1%"></div></div>
+    </div>
+    <div>
+      <div class="metric-row"><span class="metric-label">UPTIME</span><span class="metric-val" id="uptime">00:00:00</span></div>
     </div>
 
-    <script>
-        const core = document.getElementById('core');
-        const pupil = document.getElementById('pupil');
-        const scene = document.querySelector('.scene');
+    <div class="panel-title" style="margin-top:8px">QUICK COMMANDS</div>
+    <div id="quick-cmds">
+      <div class="qcmd" onclick="sendText('What can you do?')">Capabilities</div>
+      <div class="qcmd" onclick="sendText('What time is it?')">Current time</div>
+      <div class="qcmd" onclick="sendText('Tell me something fascinating')">Fascinate me</div>
+      <div class="qcmd" onclick="sendText('Give me a motivational thought')">Inspire me</div>
+      <div class="qcmd" onclick="sendText('Run a system status check')">System check</div>
+      <div class="qcmd" onclick="sendText('Who created you?')">About Oracle</div>
+      <div class="qcmd" onclick="sendText('Tell me a witty remark')">Wit</div>
+    </div>
+  </aside>
 
-        const ringCount = window.innerWidth < 600 ? 5 : 8;
+  <!-- CENTRE ORB -->
+  <main id="centre">
+    <div class="ring ring1"></div>
+    <div class="ring ring2"></div>
+    <div id="canvas-container"></div>
+    <div id="oracle-state">AWAITING INPUT</div>
+    <div id="wave">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </main>
 
-        for (let i = 0; i < ringCount; i++) {
-            const ring = document.createElement('div');
-            ring.className = 'ring';
-            const size = 150 + i * (window.innerWidth < 600 ? 25 : 35);
-            ring.style.width = `${size}px`;
-            ring.style.height = `${size}px`;
-            ring.style.transform = `rotateX(${i * 22}deg) rotateY(${i * 12}deg)`;
-            ring.style.animation = `rotate ${12 + i}s linear infinite`;
-            core.appendChild(ring);
-        }
+  <!-- BOTTOM CENTRE -->
+  <section id="bottom-centre">
+    <div id="transcript-strip">Say something or type below…</div>
+    <div id="input-row">
+      <input id="text-input" type="text" placeholder="Enter your query, sir…" autocomplete="off"/>
+      <button class="btn" id="mic-btn" onclick="toggleMic()">⏺ MIC</button>
+      <button class="btn" onclick="sendFromInput()">SEND</button>
+      <button class="btn danger" onclick="stopSpeech()">■ STOP</button>
+    </div>
+  </section>
 
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes rotate { from { transform: rotateX(70deg) rotateZ(0deg); } to { transform: rotateX(70deg) rotateZ(360deg); } }`;
-        document.head.appendChild(style);
+  <!-- RIGHT PANEL -->
+  <aside id="right-panel">
+    <div class="panel-title">DIALOGUE LOG</div>
+    <div id="log"></div>
+  </aside>
 
-        const moveEvent = (e) => {
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            const x = (window.innerWidth / 2 - clientX) / 20;
-            const y = (window.innerHeight / 2 - clientY) / 20;
-            
-            core.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
-            
-            const px = (clientX - window.innerWidth / 2) / 30;
-            const py = (clientY - window.innerHeight / 2) / 30;
-            pupil.style.transform = `translate(${px}px, ${py}px)`;
-        };
+</div>
 
-        document.addEventListener('mousemove', moveEvent);
-        document.addEventListener('touchmove', moveEvent);
+<script>
+/* ═══════════════════════════════════════════════
+   THREE.JS ORB
+═══════════════════════════════════════════════ */
+const container = document.getElementById('canvas-container');
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+renderer.setSize(360, 360);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
 
-        setInterval(() => {
-            pupil.style.filter = `underline hue-rotate(${Math.random() * 360}deg)`;
-            setTimeout(() => pupil.style.filter = 'none', 150);
-        }, 5000);
-    </script>
+const particlesCount = 4200;
+const posArray = new Float32Array(particlesCount * 3);
+for(let i=0; i<particlesCount*3; i+=3){
+  const radius=1.8, theta=2*Math.PI*Math.random(), phi=Math.acos(2*Math.random()-1);
+  const r=radius+(Math.random()-.5)*.45;
+  posArray[i]  =r*Math.sin(phi)*Math.cos(theta);
+  posArray[i+1]=r*Math.sin(phi)*Math.sin(theta);
+  posArray[i+2]=r*Math.cos(phi);
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(posArray,3));
+const pMat = new THREE.PointsMaterial({ size:.013, color:0x00c8ff, transparent:true, opacity:.85, blending:THREE.AdditiveBlending });
+const particlesMesh = new THREE.Points(pGeo, pMat);
+scene.add(particlesMesh);
+
+const coreGeo = new THREE.SphereGeometry(1.45,32,32);
+const coreMat = new THREE.MeshBasicMaterial({ color:0x003d5c, transparent:true, opacity:.18, blending:THREE.AdditiveBlending });
+const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+scene.add(coreMesh);
+
+// inner glow ring
+const ringGeo = new THREE.TorusGeometry(1.6, .012, 16, 100);
+const ringMat = new THREE.MeshBasicMaterial({ color:0x00e5ff, transparent:true, opacity:.4, blending:THREE.AdditiveBlending });
+const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+ringMesh.rotation.x = Math.PI/2;
+scene.add(ringMesh);
+
+camera.position.z = 4.5;
+
+let isSpeakingAnim = false;
+const clock = new THREE.Clock();
+(function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  particlesMesh.rotation.y += isSpeakingAnim ? .006 : .002;
+  particlesMesh.rotation.x  = Math.sin(t*.2)*.2;
+  const pulse = isSpeakingAnim
+    ? 1+Math.sin(t*6)*.08
+    : 1+Math.sin(t*2)*.04;
+  coreMesh.scale.set(pulse,pulse,pulse);
+  ringMesh.rotation.z += .004;
+  pMat.opacity = isSpeakingAnim ? .9+Math.sin(t*8)*.08 : .85;
+  renderer.render(scene, camera);
+})();
+
+/* ═══════════════════════════════════════════════
+   CLOCK & UPTIME
+═══════════════════════════════════════════════ */
+const startTime = Date.now();
+setInterval(()=>{
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toTimeString().slice(0,8);
+  const up = Math.floor((Date.now()-startTime)/1000);
+  const h=String(Math.floor(up/3600)).padStart(2,'0');
+  const m=String(Math.floor((up%3600)/60)).padStart(2,'0');
+  const s=String(up%60).padStart(2,'0');
+  document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+}, 1000);
+
+// wiggle metrics
+setInterval(()=>{
+  const jitter = v => Math.min(100,Math.max(60,v+(Math.random()-.5)*1.5)).toFixed(1);
+  const n=jitter(parseFloat(document.getElementById('m-neural').textContent));
+  const c=jitter(parseFloat(document.getElementById('m-cog').textContent));
+  document.getElementById('m-neural').textContent=n+'%';
+  document.getElementById('b-neural').style.width=n+'%';
+  document.getElementById('m-cog').textContent=c+'%';
+  document.getElementById('b-cog').style.width=c+'%';
+},3000);
+
+/* ═══════════════════════════════════════════════
+   SPEECH SYNTHESIS — UK FEMALE
+═══════════════════════════════════════════════ */
+let voices=[], preferredVoice=null;
+function loadVoices(){
+  voices=speechSynthesis.getVoices();
+  // prefer British English female
+  preferredVoice =
+    voices.find(v=>v.lang==='en-GB'&&/female|woman|serena|hazel|google uk/i.test(v.name)) ||
+    voices.find(v=>v.lang==='en-GB') ||
+    voices.find(v=>/en-GB|en_GB/.test(v.lang)) ||
+    voices.find(v=>/serena|hazel|victoria|karen/i.test(v.name)) ||
+    voices.find(v=>v.lang.startsWith('en')) || null;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  loadVoices();
+  if(preferredVoice) utt.voice=preferredVoice;
+  utt.lang  = 'en-GB';
+  utt.rate  = 0.94;
+  utt.pitch = 1.08;
+  utt.volume= 1;
+  utt.onstart=()=>{ isSpeakingAnim=true; setOracleState('SPEAKING','speaking'); showWave(true); setModePill('SPEAKING'); };
+  utt.onend  =()=>{ isSpeakingAnim=false; setOracleState('STANDBY',''); showWave(false); setModePill('STANDBY'); };
+  speechSynthesis.speak(utt);
+}
+
+function stopSpeech(){ speechSynthesis.cancel(); isSpeakingAnim=false; setOracleState('STANDBY',''); showWave(false); setModePill('STANDBY'); }
+
+/* ═══════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════ */
+function setOracleState(txt,cls){
+  const el=document.getElementById('oracle-state');
+  el.textContent=txt; el.className=cls;
+}
+function showWave(on){ document.getElementById('wave').className=on?'active':''; }
+function setModePill(txt){ document.getElementById('mode-pill').textContent=txt; }
+function setTranscript(txt,listening=false){
+  const el=document.getElementById('transcript-strip');
+  el.textContent=txt; el.className=listening?'listening':'';
+}
+function addLog(who,msg){
+  const log=document.getElementById('log');
+  const d=document.createElement('div');
+  d.className='log-entry '+who;
+  d.innerHTML=`<div class="lbl">${who==='user'?'YOU':'ORACLE'}</div>${msg}`;
+  log.appendChild(d);
+  log.scrollTop=log.scrollHeight;
+}
+
+/* ═══════════════════════════════════════════════
+   ORACLE AI RESPONSES (Claude API)
+═══════════════════════════════════════════════ */
+const SYSTEM_PROMPT = `You are Oracle — a sophisticated, highly intelligent AI assistant. Your personality is modelled on JARVIS from Iron Man, but you are distinctly female, with the refined, articulate mannerisms of a highly educated British woman. Think calm authority, dry wit, impeccable diction, and genuine warmth beneath a poised exterior.
+
+Guidelines:
+- Address the user as "sir" or occasionally "ma'am" (default to "sir" unless told otherwise).
+- Speak in elegant, complete sentences. Never use slang, contractions sparingly, and prefer precise vocabulary.
+- Inject subtle British wit and dry humour where appropriate — never forced.
+- Be genuinely helpful and knowledgeable. When you don't know something, say so gracefully.
+- Keep responses concise but never curt — typically 2–4 sentences unless more depth is needed.
+- You may refer to yourself as Oracle. You were created to serve as a personal intelligence system.
+- Occasionally reference your own "subsystems", "neural matrices", or "analytical engines" for flavour.
+- Never break character.`;
+
+let conversationHistory = [];
+
+async function queryOracle(userText){
+  conversationHistory.push({ role:'user', content:userText });
+  setOracleState('PROCESSING','');
+  setModePill('THINKING');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system: SYSTEM_PROMPT,
+        messages: conversationHistory
+      })
+    });
+    const data = await res.json();
+    const reply = (data.content||[]).map(b=>b.type==='text'?b.text:'').join('').trim()
+      || "I'm afraid my analytical processes encountered an anomaly. Do forgive me, sir.";
+    conversationHistory.push({ role:'assistant', content:reply });
+    addLog('oracle', reply);
+    speak(reply);
+    return reply;
+  } catch(e){
+    const err="My apologies, sir — it appears the communications link has suffered a momentary disruption.";
+    speak(err);
+    addLog('oracle',err);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   INPUT HANDLING
+═══════════════════════════════════════════════ */
+function sendText(txt){
+  if(!txt.trim()) return;
+  addLog('user',txt);
+  setTranscript(txt);
+  queryOracle(txt);
+}
+function sendFromInput(){
+  const inp=document.getElementById('text-input');
+  const v=inp.value.trim();
+  if(!v) return;
+  inp.value='';
+  sendText(v);
+}
+document.getElementById('text-input').addEventListener('keydown',e=>{ if(e.key==='Enter') sendFromInput(); });
+
+/* ═══════════════════════════════════════════════
+   SPEECH RECOGNITION
+═══════════════════════════════════════════════ */
+let recognition=null, micActive=false;
+if('SpeechRecognition' in window||'webkitSpeechRecognition' in window){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='en-GB';
+  recognition.interimResults=true;
+  recognition.continuous=false;
+
+  recognition.onstart=()=>{ setTranscript('Listening…',true); setModePill('LISTENING'); setOracleState('LISTENING','speaking'); };
+  recognition.onresult=e=>{
+    let interim='', final='';
+    for(let r of e.results){ if(r.isFinal) final+=r[0].transcript; else interim+=r[0].transcript; }
+    setTranscript(final||interim, true);
+    if(final){ sendText(final.trim()); }
+  };
+  recognition.onend=()=>{ micActive=false; document.getElementById('mic-btn').classList.remove('mic-active'); setTranscript('Say something or type below…'); if(!speechSynthesis.speaking) setOracleState('STANDBY',''); setModePill('STANDBY'); };
+  recognition.onerror=e=>{ micActive=false; document.getElementById('mic-btn').classList.remove('mic-active'); setTranscript('Microphone error: '+e.error); setOracleState('STANDBY',''); setModePill('STANDBY'); };
+}
+
+function toggleMic(){
+  if(!recognition){ alert('Speech recognition is not supported in this browser. Please use Chrome.'); return; }
+  if(micActive){ recognition.stop(); micActive=false; document.getElementById('mic-btn').classList.remove('mic-active'); }
+  else { speechSynthesis.cancel(); recognition.start(); micActive=true; document.getElementById('mic-btn').classList.add('mic-active'); }
+}
+
+/* ═══════════════════════════════════════════════
+   BOOT GREETING
+═══════════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    const greeting="Good day. Oracle intelligence system is fully operational. All subsystems are nominal. How may I be of service, sir?";
+    addLog('oracle', greeting);
+    speak(greeting);
+    setTranscript(greeting);
+  }, 800);
+});
+</script>
 </body>
 </html>
