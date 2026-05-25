@@ -132,59 +132,60 @@ button:active {
             transform: rotateX(85deg) translateZ(-50px);
             background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 242, 255, 0.03) 2px);
         }
+
+        #coreCanvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
     </style>
 </head>
 <body>
 
-    //
-  /* <div class="scene">
+    <div class="scene">
         <div class="hologram-plate"></div>
-        <div class="core-container" id="core">
-            <div class="eye-socket">
-                <div class="pupil" id="pupil"></div>
-            </div>
+        <canvas id="coreCanvas"></canvas>
+        <div class="eye-socket">
+            <div class="pupil" id="pupil"></div>
         </div>
-    </div> */
+    </div>
 
     <div class="controls">
 <button id="speakBtn" onclick="speak('System fully operational. Vocal synchronization algorithms online. Ready for execution.')">Start communication</button>
     </div>
     
     <script>
-        const core = document.getElementById('core');
+        const canvas = document.getElementById('coreCanvas');
+        const ctx = canvas.getContext('2d');
         const pupil = document.getElementById('pupil');
-        const scene = document.querySelector('.scene');
 
-        const ringCount = window.innerWidth < 600 ? 5 : 8;
+        let isSpeaking = false;
+        let speechWaveform = 0;
 
-        const ringsArray = [];
+        let mouseX = 0;
+        let mouseY = 0;
 
-for (let i = 0; i < ringCount; i++) {
-    const ring = document.createElement('div');
-    ring.className = 'ring';
-    const size = 150 + i * (window.innerWidth < 600 ? 25 : 35);
-    ring.style.width = `${size}px`;
-    ring.style.height = `${size}px`;
-    
-    const baseTransform = `rotateX(70deg) rotateZ(${i * 45}deg)`;
-    ring.dataset.baseTransform = baseTransform;
-    ring.style.transform = baseTransform;
-    
-    core.appendChild(ring);
-    ringsArray.push({
-        element: ring,
-        baseTransform: baseTransform,
-        phase: i * 0.5
-    });
-}
+        function resizeCanvas() {
+            const size = canvas.clientWidth;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = size * dpr;
+            canvas.height = size * dpr;
+            ctx.scale(dpr, dpr);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
         const moveEvent = (e) => {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            const x = (window.innerWidth / 2 - clientX) / 20;
-            const y = (window.innerHeight / 2 - clientY) / 20;
-            
-            core.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+            mouseX = (window.innerWidth / 2 - clientX) / 20;
+            mouseY = (window.innerHeight / 2 - clientY) / 20;
             
             const px = (clientX - window.innerWidth / 2) / 30;
             const py = (clientY - window.innerHeight / 2) / 30;
@@ -248,33 +249,82 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
     synth.speak(utterance);
                        }
 
+        function drawRing(centerX, centerY, radius, tiltX, tiltY, index) {
+            ctx.beginPath();
+            
+            const pointsCount = 120; 
+            const time = Date.now() * 0.004;
+            
+            for (let i = 0; i <= pointsCount; i++) {
+                const angle = (i / pointsCount) * Math.PI * 2;
+                
+                let waveOffset = 0;
+                if (isSpeaking) {
+                    const waveFrequency = 4; 
+                    const waveSpeed = time + (index * 0.3);
+                    waveOffset = Math.sin(angle * waveFrequency - waveSpeed) * (speechWaveform * 15);
+                }
+                
+                let x = Math.cos(angle) * radius;
+                let y = Math.sin(angle) * radius;
+                
+                y += waveOffset;
+                
+                const cosX = Math.cos(tiltX * Math.PI / 180);
+                const sinX = Math.sin(tiltX * Math.PI / 180);
+                const cosY = Math.cos(tiltY * Math.PI / 180);
+                const sinY = Math.sin(tiltY * Math.PI / 180);
+                
+                const transformedX = x * cosY - y * sinY * sinX;
+                const transformedY = y * cosX;
+                
+                const finalX = centerX + transformedX;
+                const finalY = centerY + transformedY;
+                
+                if (i === 0) {
+                    ctx.moveTo(finalX, finalY);
+                } else {
+                    ctx.lineTo(finalX, finalY);
+                }
+            }
+            
+            ctx.strokeStyle = `rgba(0, 242, 255, ${0.15 + (speechWaveform * 0.35)})`;
+            ctx.lineWidth = 1.5;
+            
+            if (isSpeaking) {
+                ctx.shadowBlur = speechWaveform * 12;
+                ctx.shadowColor = '#00f2ff';
+            } else {
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.stroke();
+        }
+
         function updateVisuals() {
             animationFrameId = requestAnimationFrame(updateVisuals);
-
+            
+            const size = canvas.width / (window.devicePixelRatio || 1);
+            ctx.clearRect(0, 0, size, size);
+            
             if (isSpeaking) {
-                speechWaveform = Math.sin(Date.now() * 0.004) * 0.2 + 0.3;
-                speechPitchModifier = 1;
+                if (speechWaveform < 1) speechWaveform += 0.05;
             } else {
-                speechWaveform = speechWaveform * 0.8; 
-                if (speechWaveform < 0.01) speechWaveform = 0;
-                speechPitchModifier = 1;
+                if (speechWaveform > 0) speechWaveform -= 0.05;
+                if (speechWaveform < 0) speechWaveform = 0;
             }
-
-         ringsArray.forEach((ringObj, index) => {
-    const currentWave = speechWaveform;
-    const scale = 1 + (currentWave * 0.05);
-    const guitarVibration = Math.sin((Date.now() * 0.006) - (index * 0.3)) * (currentWave * 25);
-    ringObj.element.style.transform = `${ringObj.baseTransform} translateZ(${guitarVibration}px) scale(${scale})`;
-    ringObj.element.style.borderRadius = '50%';
-    
-    if (isSpeaking) {
-        ringObj.element.style.borderColor = `rgba(0, 242, 255, ${0.3 + (currentWave * 0.4)})`;
-        ringObj.element.style.boxShadow = `0 0 ${currentWave * 15}px rgba(0, 242, 255, ${currentWave * 0.3})`;
-    } else {
-        ringObj.element.style.borderColor = 'rgba(0, 217, 255, 0.3)';
-        ringObj.element.style.boxShadow = 'none';
-    }
-});
+            
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const ringCount = window.innerWidth < 600 ? 5 : 8;
+            
+            const currentTiltX = 70 + mouseY; 
+            const currentTiltY = -mouseX;      
+            
+            for (let i = 0; i < ringCount; i++) {
+                const radius = 65 + i * (window.innerWidth < 600 ? 12 : 18);
+                drawRing(centerX, centerY, radius, currentTiltX, currentTiltY, i);
+            }
         }
 
 updateVisuals();
