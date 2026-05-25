@@ -242,7 +242,7 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
     synth.speak(utterance);
                        }
 
-        function drawRing(centerX, centerY, radius, tiltX, tiltY, index) {
+        function drawRing(centerX, centerY, radius, index) {
             ctx.beginPath();
             
             const pointsCount = 120; 
@@ -253,26 +253,18 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
                 
                 let waveOffset = 0;
                 if (isSpeaking) {
+                    // This creates the vibration without the spinning illusion
                     const waveFrequency = 4; 
-                    const waveSpeed = time + (index * 0.3);
+                    const waveSpeed = time + (Math.sin(index) * 5);
                     waveOffset = Math.sin(angle * waveFrequency - waveSpeed) * (speechWaveform * 15);
                 }
                 
-                let x = Math.cos(angle) * radius;
-                let y = Math.sin(angle) * radius;
+                // Calculate position in 2D space directly
+                const x = Math.cos(angle) * (radius + waveOffset);
+                const y = Math.sin(angle) * (radius + waveOffset);
                 
-                y += waveOffset;
-                
-                const cosX = Math.cos(tiltX * Math.PI / 180);
-                const sinX = Math.sin(tiltX * Math.PI / 180);
-                const cosY = Math.cos(tiltY * Math.PI / 180);
-                const sinY = Math.sin(tiltY * Math.PI / 180);
-                
-                const transformedX = x * cosY - y * sinY * sinX;
-                const transformedY = y * cosX;
-                
-                const finalX = centerX + transformedX;
-                const finalY = centerY + transformedY;
+                const finalX = centerX + x;
+                const finalY = centerY + y;
                 
                 if (i === 0) {
                     ctx.moveTo(finalX, finalY);
@@ -316,8 +308,8 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
             
             for (let i = 0; i < ringCount; i++) {
                 const radius = 65 + i * (window.innerWidth < 600 ? 12 : 18);
-                drawRing(centerX, centerY, radius, currentTiltX, currentTiltY, i);
-            }
+                drawRing(centerX, centerY, radius, i);
+        }
         }
 
 updateVisuals();
