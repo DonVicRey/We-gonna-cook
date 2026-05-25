@@ -15,7 +15,7 @@
             align-items: center;
             height: 100vh;
             width: 100vw;
-            perspective: 1200px;
+            perspective: none;
         }
 
         .scene {
@@ -23,9 +23,8 @@
             height: 80vw;
             max-width: 400px;
             max-height: 400px;
-            position: relative;
-            transform-style: preserve-3d;
-            animation: float 6s ease-in-out infinite;
+            position: relative;  
+            animation: none;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -181,16 +180,12 @@ button:active {
         resizeCanvas();
         
         const moveEvent = (e) => {
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            mouseX = (window.innerWidth / 2 - clientX) / 20;
-            mouseY = (window.innerHeight / 2 - clientY) / 20;
-            
-            const px = (clientX - window.innerWidth / 2) / 30;
-            const py = (clientY - window.innerHeight / 2) / 30;
-            pupil.style.transform = `translate(${px}px, ${py}px)`;
-        };
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const px = (clientX - window.innerWidth / 2) / 30;
+    const py = (clientY - window.innerHeight / 2) / 30;
+    pupil.style.transform = `translate(${px}px, ${py}px)`;
+};
 
         document.addEventListener('mousemove', moveEvent);
         document.addEventListener('touchmove', moveEvent);
@@ -199,7 +194,7 @@ let speechPitchModifier = 1;
 let animationFrameId;
 
 const synth = window.speechSynthesis;
-let femaleVoice = null;
+let femaleVoice = null;m
 
 function loadVoices() {
     const voices = synth.getVoices();
@@ -316,8 +311,8 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
             const centerY = size / 2;
             const ringCount = window.innerWidth < 600 ? 5 : 8;
             
-            const currentTiltX = 70 + mouseY; 
-            const currentTiltY = -mouseX;      
+            const currentTiltX = 0;
+            const currentTiltY = 0;  
             
             for (let i = 0; i < ringCount; i++) {
                 const radius = 65 + i * (window.innerWidth < 600 ? 12 : 18);
